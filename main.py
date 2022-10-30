@@ -1,6 +1,32 @@
 import time
 import RPi.GPIO as GPIO
 
+class IRsender():
+    def __init__(self):
+        pass
+
+class IRempfaenger():
+    def __init__(self):
+        pass
+    
+class Reifen():
+    def __init__(self, pin=int()):
+        self.steuerpin=pin
+        self.mode=False
+        
+        self.setmode(False)
+        
+    def getMode(self):
+        return self.mode
+    
+    def setmode(self, mode=bool()):
+        if mode== True:
+            pass
+        elif mode==False:
+            pass
+        
+        self.mode=mode
+
 class ULTRAschall():
     def __init__(self, trigger=int(), echo=int()):
         self.trigger=trigger #pin von dem das singnal ausgeht
@@ -45,6 +71,9 @@ if __name__ == '__main__':
     AS_vor_links=ULTRAschall(trigger=int(), echo=int())
     AS_hinten_rechs=ULTRAschall(trigger=int(), echo=int())
     AS_hinten_links=ULTRAschall(trigger=int(), echo=int())
+    
+    R_Rechts=Reifen(pin=int())
+    R_Links=Reifen(pin=int())
     
     while run:
         #ein durschlauf=1fp
