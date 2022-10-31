@@ -1,5 +1,5 @@
 import time
-import RPi.GPIO as GPIO
+import RPI.GPIO as GPIO
 
 class IRsender():
     def __init__(self):
