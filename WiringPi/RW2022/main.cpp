@@ -1,5 +1,5 @@
 #include <wiringpi.h>
-//#include <studio.h>
+//#include <stdio.h>
 
 class IRsenden{
     private:
@@ -22,7 +22,7 @@ class IRemfpaenger{
         resiverPin=resiver;
     }
     int getinfo(){
-
+        return 0;
     }
 };
 class Reifen{
