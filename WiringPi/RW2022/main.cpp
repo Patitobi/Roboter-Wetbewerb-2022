@@ -1,5 +1,5 @@
 #include <wiringpi.h>
-//#include <stdio.h>
+#include <stdio.h>
 
 class IRsenden{
     private:
