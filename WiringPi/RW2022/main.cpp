@@ -1,5 +1,5 @@
-#include <wiringpi.h>
-//#include <studio.h>
+#include <wiringPi.h>
+#include <stdio.h>
 
 class IRsenden{
     private:
@@ -22,7 +22,7 @@ class IRemfpaenger{
         resiverPin=resiver;
     }
     int getinfo(){
-
+        return 0;
     }
 };
 class Reifen{
@@ -71,35 +71,46 @@ class Ultraschall{
             return distanz/=anz;
         }
         float get_distanz(){
-            float startTimer;
-            float stoptimer;
+            int startTimer;
+            int stoptimer;
 
             digitalWrite(trigger, HIGH);
             delayMicroseconds(0.01);
             digitalWrite(trigger, LOW);
 
-            while (digitalRead(echo)==0)
-            {
-                startTimer=micros(); //start time
+            printf("start\n");
+            startTimer=micros();
+
+            while(1){
+                if(digitalRead(echo)==1){
+                    printf("stop\n");
+                    stoptimer=micros();
+                    break;
+                }
             }
-            while (digitalRead(echo)==1)
-            {
-                stoptimer=micros(); //stoptimer
-            }
-            return ((stoptimer-startTimer)*34300)/2;
+            printf("%d\n", startTimer);
+            printf("%d\n", stoptimer);
+            printf("%d\n", ((stoptimer-startTimer)*34300)/2);
+            return (stoptimer-startTimer)*34300/2;
         }
 };
 
 int main(void){
     wiringPiSetupGpio();
 
-    Reifen R_Rechts(int);   
-    Reifen R_Links(int);
+    //Reifen R_Rechts(int);   
+    //Reifen R_Links(int);
 
-    Ultraschall AS_vorne_rechts(int, int);
-    Ultraschall AS_vorne_links(int, int);
-    Ultraschall AS_hinten_rechts(int, int);
-    Ultraschall AS_hinten_links(int, int);
-
+    Ultraschall Abstand_vorne_rechts(18, 23);
+    //Ultraschall AS_vorne_links(int, int);
+    //Ultraschall AS_hinten_rechts(int, int);
+    //Ultraschall AS_hinten_links(int, int);
+    while (1){
+        delay(500);
+        float distanc = Abstand_vorne_rechts.get_distanz();
+        //printf("%d\n",distanc);
+        printf("LOS\n");
+    }
+    
     return 0;
 }
