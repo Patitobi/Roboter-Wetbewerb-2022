@@ -105,12 +105,12 @@ int main(void){
     //Ultraschall AS_vorne_links(int, int);
     //Ultraschall AS_hinten_rechts(int, int);
     //Ultraschall AS_hinten_links(int, int);
-    while (1){
+    /*while (1){
         delay(500);
         float distanc = Abstand_vorne_rechts.get_distanz();
         //printf("%d\n",distanc);
         printf("LOS\n");
-    }
+    }*/
     
     return 0;
 }
