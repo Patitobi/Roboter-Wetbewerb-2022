@@ -1,4 +1,4 @@
-#include <wiringpi.h>
+#include <wiringPi.h>
 #include <stdio.h>
 
 class IRsenden{
@@ -71,35 +71,44 @@ class Ultraschall{
             return distanz/=anz;
         }
         float get_distanz(){
-            float startTimer;
-            float stoptimer;
+            int startTimer;
+            int stoptimer;
 
             digitalWrite(trigger, HIGH);
             delayMicroseconds(0.01);
             digitalWrite(trigger, LOW);
 
-            while (digitalRead(echo)==0)
+            while (digitalRead(echo==0))
             {
-                startTimer=micros(); //start time
+                printf("start\n");
+                startTimer=micros();
             }
-            while (digitalRead(echo)==1)
-            {
-                stoptimer=micros(); //stoptimer
+            while(digitalRead(echo)==1){
+                printf("stop\n");
+                stoptimer=micros();
             }
-            return ((stoptimer-startTimer)*34300)/2;
+            float dif = stoptimer-startTimer;
+            dif=(dif*343)*0.0001;
+            return dif;
         }
 };
 
 int main(void){
     wiringPiSetupGpio();
 
-    Reifen R_Rechts(int);   
-    Reifen R_Links(int);
+    //Reifen R_Rechts(int);   
+    //Reifen R_Links(int);
 
-    Ultraschall AS_vorne_rechts(int, int);
-    Ultraschall AS_vorne_links(int, int);
-    Ultraschall AS_hinten_rechts(int, int);
-    Ultraschall AS_hinten_links(int, int);
-
+    Ultraschall Abstand_vorne_rechts(18, 23);
+    //Ultraschall AS_vorne_links(int, int);
+    //Ultraschall AS_hinten_rechts(int, int);
+    //Ultraschall AS_hinten_links(int, int);
+    while (1){
+        delay(500);
+        printf("LOS\n");
+        float distanc = Abstand_vorne_rechts.get_distanz();
+        printf("%d\n",distanc);
+    }
+    
     return 0;
 }
