@@ -7,7 +7,7 @@ class IRsenden{
 
     public:
     IRsenden(int pin){
-        senderPin=pin;
+        senderPin=pin; 
         
     }
     void sendinfo(){
@@ -19,7 +19,7 @@ class IRemfpaenger{
         int resiverPin;
     public:
     IRemfpaenger(int resiver){
-        resiverPin=resiver;
+        resiverPin=resiver; //https://ozzmaker.com/how-to-control-the-gpio-on-a-raspberry-pi-with-an-ir-remote/
     }
     int getinfo(){
         return 0;
@@ -105,12 +105,12 @@ int main(void){
     //Ultraschall AS_vorne_links(int, int);
     //Ultraschall AS_hinten_rechts(int, int);
     //Ultraschall AS_hinten_links(int, int);
-    while (1){
+    /*while (1){
         delay(500);
         float distanc = Abstand_vorne_rechts.get_distanz();
         //printf("%d\n",distanc);
         printf("LOS\n");
-    }
+    }*/
     
     return 0;
 }
