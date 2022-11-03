@@ -59,7 +59,6 @@ class Ultraschall{
         Ultraschall(int trigger, int echo){
             trigger=trigger;
             echo=echo;
-
             pinMode(trigger, OUTPUT);
             pinMode(echo, INPUT);
         }
@@ -71,32 +70,30 @@ class Ultraschall{
             return distanz/=anz;
         }
         float get_distanz(){
-            int time;
-
-            printf("LOS\n");
             digitalWrite(trigger, HIGH);
             delayMicroseconds(10);
             digitalWrite(trigger, LOW);
-            time=0;
-            
-            while (digitalRead(echo)==0)  
-            while (digitalRead(echo)==1)
-            {
-                time++;
+            int time=0;
+
+            while (1){
+                printf("%d\n", digitalRead(echo));
+                delayMicroseconds(10);
+            }
+            while (digitalRead(echo)==1){
                 delayMicroseconds(1);
                 if (time>20000)return 0;
             }
-            return ((time*343)*0.0001)/2;
+            return time;
+            //return ((time*343)*0.0001)/2;
         }
 };
-
 int main(void){
-    wiringPiSetupGpio();
+    wiringPiSetup();
 
     //Reifen R_Rechts(int);   
     //Reifen R_Links(int);
 
-    Ultraschall Abstand_vorne_rechts(23, 24);
+    Ultraschall Abstand_vorne_rechts(4, 5);
     //Ultraschall AS_vorne_links(int, int);
     //Ultraschall AS_hinten_rechts(int, int);
     //Ultraschall AS_hinten_links(int, int);
