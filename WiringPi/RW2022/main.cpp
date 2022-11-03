@@ -87,10 +87,11 @@ class Ultraschall{
         }
 };
 int main(void){
-    wiringPiSetup();
+    wiringPiSetupGpio();
 
-    pinMode(4, 1);
-    pinMode(5,0);
+    pinMode(23,1);
+    pinMode(24,0);
+    pinMode(17,1);
     int onOff;
 
     //Reifen R_Rechts(int);   
@@ -104,15 +105,16 @@ int main(void){
         // delay(5000);
         // float distanc = Abstand_vorne_rechts.get_distanz();
         // printf("%d\n",distanc);
-
-        digitalWrite(4,1);
-        onOff = digitalRead(5);
-        printf("%d",onOff);
-        delay(500);
-        digitalWrite(4,0);
-        onOff = digitalRead(5);
-        printf("%d",onOff);
-        delay(500);
+        digitalWrite(23,1);
+        digitalWrite(17,1);
+        onOff = digitalRead(24);
+        printf("%d\n",onOff);
+        delay(5000);
+        digitalWrite(23,0);
+        digitalWrite(17,0);
+        onOff = digitalRead(24);
+        printf("%d\n",onOff);
+        delay(5000);
     }
     return 0;
 }
