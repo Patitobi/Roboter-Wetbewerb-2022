@@ -71,24 +71,22 @@ class Ultraschall{
             return distanz/=anz;
         }
         float get_distanz(){
-            unsigned int startTime;
-            unsigned int stopTime;
+            int time;
 
             printf("LOS\n");
             digitalWrite(trigger, HIGH);
             delayMicroseconds(10);
             digitalWrite(trigger, LOW);
-            startTime = micros();
+            time=0;
             
-            while (digitalRead(echo)==0){
-                printf("%d",digitalRead(echo));
+            while (digitalRead(echo)==0)  
+            while (digitalRead(echo)==1)
+            {
+                time++;
+                delayMicroseconds(1);
+                if (time>20000)return 0;
             }
-            printf("F\n");
-            stopTime = micros();
-            printf("%d",digitalRead(echo));
-
-            float timeDif = ((stopTime - startTime)*343)*0.0001;
-            return timeDif;
+            return ((time*343)*0.0001)/2;
         }
 };
 
