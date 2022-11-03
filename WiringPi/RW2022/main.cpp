@@ -83,10 +83,10 @@ class Ultraschall{
             startTime = micros();
 
             while (digitalRead(echo)==0){
-                printf("%d",digitalRead);
+                printf("%d",digitalRead(echo));
             }
             stopTime = micros();
-            printf("%d",digitalRead);
+            printf("%d",digitalRead(echo));
 
             float timeDif = ((stopTime - startTime)*343)*0.0001;
             return timeDif;
