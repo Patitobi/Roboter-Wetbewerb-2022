@@ -71,25 +71,25 @@ class Ultraschall{
             return distanz/=anz;
         }
         float get_distanz(){
-            int startTimer;
-            int stoptimer;
+            unsigned int startTime;
+            unsigned int stopTime;
+
+            digitalWrite(trigger, LOW);
+            delayMicroseconds(2);
 
             digitalWrite(trigger, HIGH);
-            delayMicroseconds(0.01);
-            digitalWrite(trigger, LOW);
+            delayMicroseconds(10);
+            
+            startTime = micros();
 
-            while (digitalRead(echo==0))
-            {
-                printf("start\n");
-                startTimer=micros();
+            while (digitalRead(echo)==0){
+                printf("%d",digitalRead);
             }
-            while(digitalRead(echo)==1){
-                printf("stop\n");
-                stoptimer=micros();
-            }
-            float dif = stoptimer-startTimer;
-            dif=(dif*343)*0.0001;
-            return dif;
+            stopTime = micros();
+            printf("%d",digitalRead);
+
+            float timeDif = ((stopTime - startTime)*343)*0.0001;
+            return timeDif;
         }
 };
 
@@ -104,7 +104,7 @@ int main(void){
     //Ultraschall AS_hinten_rechts(int, int);
     //Ultraschall AS_hinten_links(int, int);
     while (1){
-        delay(500);
+        delay(5000);
         printf("LOS\n");
         float distanc = Abstand_vorne_rechts.get_distanz();
         printf("%d\n",distanc);
