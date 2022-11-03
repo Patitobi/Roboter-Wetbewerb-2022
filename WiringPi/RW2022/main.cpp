@@ -75,32 +75,36 @@ class Ultraschall{
             digitalWrite(trigger, LOW);
             int time=0;
 
-            while (1){
-                printf("%d\n", digitalRead(echo));
-                delayMicroseconds(10);
+            while (digitalRead(echo)==0){
+                time=0;
             }
             while (digitalRead(echo)==1){
                 delayMicroseconds(1);
+                time++;
                 if (time>20000)return 0;
             }
-            return time;
-            //return ((time*343)*0.0001)/2;
+            return ((time*343)*0.0001)/2;
         }
 };
 int main(void){
     wiringPiSetup();
-
     //Reifen R_Rechts(int);   
     //Reifen R_Links(int);
 
-    Ultraschall Abstand_vorne_rechts(4, 5);
+    //Ultraschall Abstand_vorne_rechts(4, 5);
     //Ultraschall AS_vorne_links(int, int);
     //Ultraschall AS_hinten_rechts(int, int);
     //Ultraschall AS_hinten_links(int, int);
     while (1){
-        delay(5000);
-        float distanc = Abstand_vorne_rechts.get_distanz();
-        printf("%d\n",distanc);
+        // delay(5000);
+        // float distanc = Abstand_vorne_rechts.get_distanz();
+        // printf("%d\n",distanc);
+        pinMode(4, 1);
+
+        digitalWrite(4,1);
+        delay(5);
+        digitalWrite(4,0);
+        delay(5);
     }
     return 0;
 }
