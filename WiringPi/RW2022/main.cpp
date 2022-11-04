@@ -59,8 +59,8 @@ class Ultraschall{
         Ultraschall(int trigger, int echo){
             trigger=trigger;
             echo=echo;
-            pinMode(trigger, OUTPUT);
-            pinMode(echo, INPUT);
+            pinMode(23, 1);
+            pinMode(24, 0);
         }
         float get_durschnitliche_distanz(int anz){
             float distanz;
@@ -70,15 +70,15 @@ class Ultraschall{
             return distanz/=anz;
         }
         float get_distanz(){
-            digitalWrite(trigger, HIGH);
+            digitalWrite(23, 1);
             delayMicroseconds(10);
-            digitalWrite(trigger, LOW);
+            digitalWrite(23, 0);
             int time=0;
 
-            while (digitalRead(echo)==0){
+            while (digitalRead(23)==0){
                 time=0;
             }
-            while (digitalRead(echo)==1){
+            while (digitalRead(23)==1){
                 delayMicroseconds(1);
                 time++;
                 if (time>20000)return 0;
@@ -88,16 +88,10 @@ class Ultraschall{
 };
 int main(void){
     wiringPiSetupGpio();
-
-    pinMode(23,1);
-    pinMode(24,0);
-    pinMode(17,1);
-    int onOff;
-
     //Reifen R_Rechts(int);   
     //Reifen R_Links(int);
 
-    //Ultraschall Abstand_vorne_rechts(4, 5);
+    Ultraschall Abstand_vorne_rechts(23, 24);
     //Ultraschall AS_vorne_links(int, int);
     //Ultraschall AS_hinten_rechts(int, int);
     //Ultraschall AS_hinten_links(int, int);
