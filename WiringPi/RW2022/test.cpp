@@ -1,41 +1,129 @@
-#include <iostream>
 #include <wiringPi.h>
-#include "libSonar.h"
+#include <stdio.h>
+#include <sys/time.h>
 
-Sonar::Sonar(){}
+class IRsenden{
+    private:
+    int senderPin;
 
-void Sonar::init(int trigger, int echo)
-{
-    this->trigger=trigger;
-    this->echo=echo;
-    pinMode(trigger, OUTPUT);
-    pinMode(echo, INPUT);
-    digitalWrite(trigger, LOW);
-    delay(500);
-}
+    public:
+    IRsenden(int pin){
+        senderPin=pin;
+        
+    }
+    void sendinfo(){
 
-double Sonar::distance(int timeout)
-{
-    delay(10);
+    }
+};
+class IRemfpaenger{
+    private:
+        int resiverPin;
+    public:
+    IRemfpaenger(int resiver){
+        resiverPin=resiver;
+    }
+    int getinfo(){
+        return 0;
+    }
+};
+class Reifen{
+    private:
+        int steuerpin;
+        bool mode;
+    public:
+        Reifen(int pin){
+            steuerpin=pin;
+            mode=false;
 
-    digitalWrite(trigger, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(trigger, LOW);
+            pinMode(steuerpin, OUTPUT);
+        }
+        void setmode(bool mode){
+            if (mode){
+                //pin auf go setzen für losfahren
+                digitalWrite(steuerpin, HIGH);
+                mode=true;
+            } else {
+                //pin auf stop setzen für stopen
+                digitalWrite(steuerpin, LOW);
+                mode=false;
+            }
+        }
+        bool getmode(){
+            return mode;
+        }
+};
+class Ultraschall{
+    public:
+        int starttime;
+        int stoptime;
+        int sendpin;
+        int recievepin;
+        int now;
+        int timeout = 12000;
+        int time;
+        Ultraschall(int sendpin, int recievepin){
+            this->sendpin=sendpin;
+            this->recievepin=recievepin;
+            pinMode(sendpin, OUTPUT);
+            pinMode(recievepin, INPUT);
+            digitalWrite(sendpin, LOW);
+            delay(50);
+        }
+        float get_durschnitliche_distanz(int anz){
+            float distanz;
+            float first3;
+            float durschnit3;
+            float tempdist;
+            for(int i=0; i<anz; i++){
+                if (i<3) first3+=get_distanz();
+                else if (i==3) durschnit3 = first3/3;
+                else {
+                    tempdist=get_distanz();
+                    if (tempdist<durschnit3-20||tempdist>durschnit3+20) distanz+=tempdist;
+                }
+                delayMicroseconds(2000);
+            }
+            return distanz/=anz;
+        }
+        float get_distanz(){
+            digitalWrite(sendpin, 1);
+            delayMicroseconds(10);
+            digitalWrite(sendpin, 0);
 
-    now=micros();
+            now = micros();
+            //Warte auf rückkehr des signals
+            while(digitalRead(recievepin == LOW) && micros()-now<timeout){
+                time = recordpulselength();
+                if (time<20){
+                    continue;
+                } else break;
+            }
+            float finDistance = ((time*343)/1000)/2;
+        return finDistance;
+    }
+    int recordpulselength(){
+        starttime = micros();
+        while (digitalRead(recievepin) == HIGH){}
+        stoptime = micros();
+        return stoptime - starttime;
+    }
+};
+int main(void){
+    wiringPiSetupGpio();
 
-    while (digitalRead(echo) == LOW && micros()-now<timeout);
-        recordPulseLength();
+    //Reifen R_Rechts(int);   
+    //Reifen R_Links(int);
 
-    travelTimeUsec = endTimeUsec - startTimeUsec;
-    distanceMeters = 100*((travelTimeUsec/1000000.0)*340.29)/2;
-
-    return distanceMeters;
-}
-
-void Sonar::recordPulseLength()
-{
-    startTimeUsec = micros();
-    while ( digitalRead(echo) == HIGH );
-    endTimeUsec = micros();
+    Ultraschall Abstand_vorne_rechts(23, 24);
+    //Ultraschall AS_vorne_links(int, int);
+    //Ultraschall AS_hinten_rechts(int, int);
+    //Ultraschall AS_hinten_links(int, int);
+    while (1){
+        printf("LoS!!!\n");
+        //float distanc = Abstand_vorne_rechts.get_durschnitliche_distanz(50);
+        float distanc = Abstand_vorne_rechts.get_distanz();
+        printf("%f\n",distanc);
+        delayMicroseconds(2000);
+    }
+    return 0;
 }
