@@ -57,10 +57,12 @@ class Ultraschall{
         int echo;
     public:
         Ultraschall(int trigger, int echo){
-            trigger=trigger;
-            echo=echo;
-            pinMode(23, 1);
-            pinMode(24, 0);
+            this->trigger=trigger;
+            this->echo=echo;
+            pinMode(trigger, OUTPUT);
+            pinMode(echo, INPUT);
+            digitalWrite(trigger, LOW);
+            delay(500);
         }
         float get_durschnitliche_distanz(int anz){
             float distanz;
@@ -69,22 +71,28 @@ class Ultraschall{
             }
             return distanz/=anz;
         }
-        float get_distanz(){
-            digitalWrite(23, 1);
-            delayMicroseconds(10);
-            digitalWrite(23, 0);
-            int time=0;
+        double get_distanz(){
+        delay(10);
 
-            while (digitalRead(23)==0){
-                time=0;
-            }
-            while (digitalRead(23)==1){
-                delayMicroseconds(1);
-                time++;
-                if (time>20000)return 0;
-            }
-            return ((time*343)*0.0001)/2;
-        }
+        digitalWrite(trigger, HIGH);
+        delayMicroseconds(10);
+        digitalWrite(trigger, LOW);
+
+        now=micros();
+
+        while (digitalRead(echo) == LOW && micros()-now<timeout);
+            recordPulseLength();
+
+        travelTimeUsec = endTimeUsec - startTimeUsec;
+        distanceMeters = 100*((travelTimeUsec/1000000.0)*340.29)/2;
+
+        return distanceMeters;
+    }
+    recordPulseLength(){
+        startTimeUsec = micros();
+        while ( digitalRead(echo) == HIGH );
+        endTimeUsec = micros();
+    }
 };
 int main(void){
     wiringPiSetupGpio();
@@ -96,19 +104,9 @@ int main(void){
     //Ultraschall AS_hinten_rechts(int, int);
     //Ultraschall AS_hinten_links(int, int);
     while (1){
-        float distanc = Abstand_vorne_rechts.get_distanz();
+        double distanc = Abstand_vorne_rechts.get_distanz();
         printf("%d\n",distanc);
         delay(5000);
-        /*digitalWrite(23,1);
-        digitalWrite(17,1);
-        onOff = digitalRead(24);
-        printf("%d\n",onOff);
-        delay(5000);
-        digitalWrite(23,0);
-        digitalWrite(17,0);
-        onOff = digitalRead(24);
-        printf("%d\n",onOff);
-        delay(5000);*/
     }
     return 0;
 }
