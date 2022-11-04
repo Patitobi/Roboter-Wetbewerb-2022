@@ -102,10 +102,10 @@ int main(void){
     //Ultraschall AS_hinten_rechts(int, int);
     //Ultraschall AS_hinten_links(int, int);
     while (1){
-        // delay(5000);
-        // float distanc = Abstand_vorne_rechts.get_distanz();
-        // printf("%d\n",distanc);
-        digitalWrite(23,1);
+        float distanc = Abstand_vorne_rechts.get_distanz();
+        printf("%d\n",distanc);
+        delay(5000);
+        /*digitalWrite(23,1);
         digitalWrite(17,1);
         onOff = digitalRead(24);
         printf("%d\n",onOff);
@@ -114,7 +114,7 @@ int main(void){
         digitalWrite(17,0);
         onOff = digitalRead(24);
         printf("%d\n",onOff);
-        delay(5000);
+        delay(5000);*/
     }
     return 0;
 }
