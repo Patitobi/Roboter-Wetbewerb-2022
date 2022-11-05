@@ -70,20 +70,17 @@ class Ultraschall{
             delay(50);
         }
         float get_durschnitliche_distanz(int anz){
-            float distanz;
-            float first3;
-            float durschnit3;
+            float distance;
             float tempdist;
             for(int i=0; i<anz; i++){
-                if (i<3) first3+=get_distanz();
-                else if (i==3) durschnit3 = first3/3;
-                else {
-                    tempdist=get_distanz();
-                    if (tempdist<durschnit3-20||tempdist>durschnit3+20) distanz+=tempdist;
-                }
-                delayMicroseconds(2000);
+                tempdist=get_distanz();
+                if (tempdist<20){
+                    i--;
+                }   else if(i>3||distance-40<tempdist||distance+40>tempdist){
+                    continue;
+                } distance+=tempdist;
             }
-            return distanz/=anz;
+            return distance/=anz;
         }
         float get_distanz(){
             digitalWrite(sendpin, 1);
@@ -94,7 +91,7 @@ class Ultraschall{
             //Warte auf rückkehr des signals
             while(digitalRead(recievepin == LOW) && micros()-now<timeout){
                 time = recordpulselength();
-                if (time<20){
+                if (time<50){
                     continue;
                 } else break;
             }
