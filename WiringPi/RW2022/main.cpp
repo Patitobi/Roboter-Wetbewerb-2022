@@ -78,18 +78,16 @@ class Ultraschall{
                 //gibt den abstand in mM zurück
                 tempdist=get_distanz();
                 //um den durschnitt wehrend jedem duschlauf zu haben
-                if (i>=1){
+                if (i>19){
                     durschnitt=distance/i;
                 }
                 if (tempdist<20){
                     //wenn messung immernoch falsch dann wird die messung nochmal durschgefürt
                     //indem der schleifen index -1 gerechnet wird
                     i--;
-                    continue;
-                }   else if(i>20||durschnitt-40<tempdist||durschnitt+40>tempdist){
+                }   else if(i>20||durschnitt-40>tempdist||durschnitt+40<tempdist){
                     //ab 20 durschleufen werden die ergebnisse mit dem bisheringen duschnitt verglichen wenn abstand zu groß den wird neu gemessen
                     i--;
-                    continue;
                 } distance+=tempdist;
             }
             return distance/anz;
@@ -138,8 +136,9 @@ int main(void){
     while (1){
         printf("LoS!!!\n");
         float distanc = Abstand_vorne_rechts.get_durschnitliche_distanz(50);
-        //float distanc = Abstand_vorne_rechts.get_distanz();
-        printf("%f\n",distanc);
+        float durschdistanc = Abstand_vorne_rechts.get_distanz();
+        printf("dursch %f\n", durschdistanc);
+        printf("nicht dursch %f\n",distanc);
         delayMicroseconds(2000);
     }
     return 0;
