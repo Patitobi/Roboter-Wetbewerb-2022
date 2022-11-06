@@ -69,38 +69,59 @@ class Ultraschall{
             delay(50);
         }
         float get_durschnitliche_distanz(int anz){
+            // anz ist die anzahl an messungen aus der der duschnitt genommen werden soll
             float distance;
             float tempdist;
+            float durschnitt;
+            //loop bis anzahl an richtigen ergebniss ereicht ist
             for(int i=0; i<anz; i++){
+                //gibt den abstand in mM zurück
                 tempdist=get_distanz();
+                //um den durschnitt wehrend jedem duschlauf zu haben
+                if (i>=1){
+                    durschnitt=distance/i;
+                }
                 if (tempdist<20){
+                    //wenn messung immernoch falsch dann wird die messung nochmal durschgefürt
+                    //indem der schleifen index -1 gerechnet wird
                     i--;
-                }   else if(i>3||distance-40<tempdist||distance+40>tempdist){
+                    continue;
+                }   else if(i>20||durschnitt-40<tempdist||durschnitt+40>tempdist){
+                    //ab 20 durschleufen werden die ergebnisse mit dem bisheringen duschnitt verglichen wenn abstand zu groß den wird neu gemessen
+                    i--;
                     continue;
                 } distance+=tempdist;
             }
-            return distance/=anz;
+            return distance/anz;
         }
         float get_distanz(){
+            //es wird ein singnal von 10qs an den sensor gesendet
             digitalWrite(sendpin, 1);
             delayMicroseconds(10);
             digitalWrite(sendpin, 0);
-
+            //die zeit vor dem auslesenen der rückgabe wird gespeichet
             now = micros();
-            //Warte auf rückkehr des signals
+            //wenn kein rückgabe singnal ankommt und nicht der tiout überschritten wird 
             while(digitalRead(recievepin == LOW) && micros()-now<timeout){
+                //die länge der singnals wird gemessen 
                 time = recordpulselength();
+                //wenn die länge des singnal zu klein ist, ist die messung vermutlich falsch
+                //weil wenn kein sinal ankommt das programm trotzdem 2qs braucht zum ausfüren das würde als ergebnis zählen was aber falsch ist
                 if (time<50){
                     continue;
                 } else break;
             }
+            //formal zum umrechnen von qS in mM
             float finDistance = ((time*343)/1000)/2;
         return finDistance;
     }
     int recordpulselength(){
+        //speicher der zeit bevor der recievepin aus 1 geht
         starttime = micros();
         while (digitalRead(recievepin) == HIGH){}
+        //speicher der zeit nachdem der recievepin aus 1 war
         stoptime = micros();
+        //die differenz zwichen start und stop wird ausgegeben
         return stoptime - starttime;
     }
 };
@@ -116,8 +137,8 @@ int main(void){
     //Ultraschall AS_hinten_links(int, int);
     while (1){
         printf("LoS!!!\n");
-        //float distanc = Abstand_vorne_rechts.get_durschnitliche_distanz(50);
-        float distanc = Abstand_vorne_rechts.get_distanz();
+        float distanc = Abstand_vorne_rechts.get_durschnitliche_distanz(50);
+        //float distanc = Abstand_vorne_rechts.get_distanz();
         printf("%f\n",distanc);
         delayMicroseconds(2000);
     }
