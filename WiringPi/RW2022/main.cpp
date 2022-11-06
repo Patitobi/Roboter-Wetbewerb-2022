@@ -61,6 +61,7 @@ class Ultraschall{
         int timeout = 12000;
         int time;
         int anzfehler;
+        int startdurschnit;
         Ultraschall(int sendpin, int recievepin){
             this->sendpin=sendpin;
             this->recievepin=recievepin;
@@ -71,14 +72,17 @@ class Ultraschall{
         }
         float get_durschnitliche_distanz(int anz){
             anzfehler=0;
-            int startdurschnit = micros();
+            //speichern der zeit beim begin
+            startdurschnit = micros();
             // anz ist die anzahl an messungen aus der der duschnitt genommen werden soll
             float distance;
             float tempdist;
             float durschnitt;
             //loop bis anzahl an richtigen ergebniss ereicht ist
             for(int i=0; i<anz; i++){
-                if(anzfehler>30||startdurschnit-micros()>1000000) return 0;
+                //wenn zu viele fehler sind oder die zeitableut wird 0 zurückgegeben
+                //damit sich das Program nicht aufhängt
+                if(anzfehler>30||micros()-startdurschnit>1000000) return 0;
                 //gibt den abstand in mM zurück
                 tempdist=get_distanz();
                 //um den durschnitt wehrend jedem duschlauf zu haben
@@ -143,8 +147,8 @@ int main(void){
     //Ultraschall AS_hinten_links(int, int);
     while (1){
         printf("LoS!!!\n");
-        float distanc = Abstand_vorne_rechts.get_durschnitliche_distanz(50);
-        float durschdistanc = Abstand_vorne_rechts.get_distanz();
+        float durschdistanc = Abstand_vorne_rechts.get_durschnitliche_distanz(50);
+        float distanc = Abstand_vorne_rechts.get_distanz();
         printf("dursch %f\n", durschdistanc);
         printf("nicht dursch %f\n",distanc);
         printf("Fehler = %d\n",Abstand_vorne_rechts.anzfehler);
