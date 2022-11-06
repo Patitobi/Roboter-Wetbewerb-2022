@@ -96,7 +96,7 @@ class Ultraschall{
                     anzfehler++;
                     continue;
                 }   else if(i>anz/4&&(durschnitt-200>tempdist||durschnitt+200<tempdist)){
-                    //ab 20 durschleufen werden die ergebnisse mit dem bisheringen duschnitt verglichen wenn abstand zu groß den wird neu gemessen
+                    //ab einem fiertel der durschleufe durschleufen werden die ergebnisse mit dem bisheringen duschnitt verglichen wenn abstand zu groß den wird neu gemessen
                     i--;
                     anzfehler++;
                     continue;
