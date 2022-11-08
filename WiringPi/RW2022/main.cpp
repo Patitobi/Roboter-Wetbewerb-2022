@@ -85,7 +85,7 @@ class Ultraschall{
                 if(anzfehler>30||micros()-startdurschnit>1000000) return 0;
                 //gibt den abstand in mM zurück
                 tempdist=get_distanz();
-                //um den durschnitt wehrend jedem duschlauf zu haben
+                //um den durschnitt wehrend jedem durschlauf zu haben
                 if (i>anz/4){
                     durschnitt=distance/i;
                 }
