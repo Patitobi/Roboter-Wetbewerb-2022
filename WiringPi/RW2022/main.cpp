@@ -78,7 +78,7 @@ class Ultraschall{
             for(int i=0; i<anz; i++){
                 //wenn zu viele fehler sind oder die zeitableut wird 0 zurückgegeben
                 //damit sich das Program nicht aufhängt
-                if(anzfehler>30||micros()-startdurschnit>1000000) return 0;
+                if(anzfehler>30||micros()-startdurschnit>1000000) return -1;
                 //gibt den abstand in mM zurück
                 tempdist=get_distanz(sensNum);
                 //um den durschnitt wehrend jedem durschlauf zu haben
@@ -102,9 +102,9 @@ class Ultraschall{
         }
         float get_distanz(int sensNum){
             //es wird ein singnal von 10qs an den sensor gesendet
-            digitalWrite(sendpin, 1);
+            digitalWrite(sensPin[sensNum][0], 1);
             delayMicroseconds(10);
-            digitalWrite(sendpin, 0);
+            digitalWrite(sensPin[sensNum][0], 0);
             //die zeit vor dem auslesenen der rückgabe wird gespeichet
             now = micros();
             //wenn kein rückgabe singnal ankommt und nicht der tiout überschritten wird 
@@ -133,13 +133,20 @@ class Ultraschall{
 };
 class Auto: public Ultraschall, public Reifen, public IRemfpaenger, public IRsenden{
     protected:
+    // in [x][0] sind die neusten messungen in [x][1] die vorheringen und in [x][2] die differenz der beiden
+        float ultraschallsave[4][3];
+        float distance;
+        int distanceTimeout = 100000;
     public:
         bool run =true;
     Auto(){
         if(!setup()) run=false;
-        
+    }    
+    bool loop(){
         while (run){
-            
+        update();
+
+        execude();
         }
     }
     bool setup(){
@@ -147,14 +154,28 @@ class Auto: public Ultraschall, public Reifen, public IRemfpaenger, public IRsen
         else return false;
     }
     void update(){
-
+        updateUltaschall();
     }
     void execude(){
 
+    }
+    void updateUltaschall(){
+        for(int i=0;i<4;i++){
+            int distanceTimeStart=micros();
+            ultraschallsave[1][i] = ultraschallsave[0][i];
+            do{
+                distance = get_durschnitliche_distanz(20, i);
+            }while (distance<=0||distanceTimeout<micros()-distanceTimeStart);
+            ultraschallsave[0][i] = distance;
+            if (ultraschallsave[i][0]<=0){
+                ultraschallsave[i][2] = -1;
+            } else ultraschallsave[i][2] = ultraschallsave[i][1]-ultraschallsave[i][0];
+        }
     }
 };
 int main(void){
     Auto Roboter;
     if (!Roboter.run) return 1;
-    else return 0;
+    else Roboter.loop();
+    return 0;
 }
