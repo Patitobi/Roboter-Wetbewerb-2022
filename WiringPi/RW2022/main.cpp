@@ -3,11 +3,9 @@
 
 class IRsenden{
     private:
-    int senderPin;
-
+    int senderPin[3]= {1,1,1};
     public:
-    IRsenden(int pin){
-        senderPin=pin;
+    IRsenden(){
         
     }
     void sendinfo(){
@@ -16,10 +14,9 @@ class IRsenden{
 };
 class IRemfpaenger{
     private:
-        int resiverPin;
+        int resiverPin[3] = {1,1,1};
     public:
-    IRemfpaenger(int resiver){
-        resiverPin=resiver;
+    IRemfpaenger(){
     }
     int getinfo(){
         return 0;
@@ -27,23 +24,23 @@ class IRemfpaenger{
 };
 class Reifen{
     private:
-        int steuerpin;
+        int steuerpin[2] = {1, 1};
         bool mode;
     public:
-        Reifen(int pin){
-            steuerpin=pin;
+        Reifen(){
             mode=false;
 
-            pinMode(steuerpin, OUTPUT);
+            pinMode(steuerpin[0], OUTPUT);
+            pinMode(steuerpin[1], OUTPUT);
         }
-        void setmode(bool mode){
+        void setmode(bool mode, int seite){
             if (mode){
                 //pin auf go setzen für losfahren
-                digitalWrite(steuerpin, HIGH);
+                digitalWrite(steuerpin[seite], HIGH);
                 mode=true;
             } else {
                 //pin auf stop setzen für stopen
-                digitalWrite(steuerpin, LOW);
+                digitalWrite(steuerpin[seite], LOW);
                 mode=false;
             }
         }
@@ -53,6 +50,7 @@ class Reifen{
 };
 class Ultraschall{
     public:
+        int sensPin[4][2] = {{23,24},{1,1},{1,1},{1,1}};
         int starttime;
         int stoptime;
         int sendpin;
@@ -62,15 +60,16 @@ class Ultraschall{
         int time;
         int anzfehler;
         int startdurschnit;
-        Ultraschall(int sendpin, int recievepin){
-            this->sendpin=sendpin;
-            this->recievepin=recievepin;
-            pinMode(sendpin, OUTPUT);
-            pinMode(recievepin, INPUT);
-            digitalWrite(sendpin, LOW);
-            delay(50);
+        Ultraschall(){
+            for (int i=0; i<4;i++){
+                pinMode(sensPin[i][0], OUTPUT);
+                pinMode(sensPin[i][1], INPUT);
+                digitalWrite(sensPin[i][0], LOW);
+                delay(50);
+            }
+            
         }
-        float get_durschnitliche_distanz(int anz){
+        float get_durschnitliche_distanz(int anz, int sensNum){
             anzfehler=0;
             //speichern der zeit beim begin
             startdurschnit = micros();
@@ -84,7 +83,7 @@ class Ultraschall{
                 //damit sich das Program nicht aufhängt
                 if(anzfehler>30||micros()-startdurschnit>1000000) return 0;
                 //gibt den abstand in mM zurück
-                tempdist=get_distanz();
+                tempdist=get_distanz(sensNum);
                 //um den durschnitt wehrend jedem durschlauf zu haben
                 if (i>anz/4){
                     durschnitt=distance/i;
@@ -104,7 +103,7 @@ class Ultraschall{
             }
             return distance/anz;
         }
-        float get_distanz(){
+        float get_distanz(int sensNum){
             //es wird ein singnal von 10qs an den sensor gesendet
             digitalWrite(sendpin, 1);
             delayMicroseconds(10);
@@ -135,22 +134,27 @@ class Ultraschall{
         return stoptime - starttime;
     }
 };
+class Auto: public Ultraschall, public Reifen, public IRemfpaenger, public IRsenden{
+    private:
+    public:
+    Auto(){
+
+    }
+};
 int main(void){
     wiringPiSetupGpio();
 
     //Reifen R_Rechts(int);   
     //Reifen R_Links(int);
 
-    Ultraschall Abstand_vorne_rechts(23, 24);
+    Ultraschall Abstand_vorne_rechts;
     //Ultraschall AS_vorne_links(int, int);
     //Ultraschall AS_hinten_rechts(int, int);
     //Ultraschall AS_hinten_links(int, int);
     while (1){
         printf("LoS!!!\n");
-        float durschdistanc = Abstand_vorne_rechts.get_durschnitliche_distanz(50);
-        float distanc = Abstand_vorne_rechts.get_distanz();
+        float durschdistanc = Abstand_vorne_rechts.get_durschnitliche_distanz(50 ,1);
         printf("dursch %f\n", durschdistanc);
-        printf("nicht dursch %f\n",distanc);
         printf("Fehler = %d\n",Abstand_vorne_rechts.anzfehler);
         delayMicroseconds(2000);
     }
