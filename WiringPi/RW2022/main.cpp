@@ -167,7 +167,7 @@ class Auto: public Ultraschall, public Reifen, public IRemfpaenger, public IRsen
                 distance = get_durschnitliche_distanz(20, i);
             }while (distance<=0||distanceTimeout<micros()-distanceTimeStart);
             ultraschallsave[0][i] = distance;
-            if (ultraschallsave[i][0]<=0){
+            if (ultraschallsave[i][0]<=0||ultraschallsave[i][1]<=0){
                 ultraschallsave[i][2] = -1;
             } else ultraschallsave[i][2] = ultraschallsave[i][1]-ultraschallsave[i][0];
         }
