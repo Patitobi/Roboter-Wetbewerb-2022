@@ -1,10 +1,34 @@
 #include <Arduino.h>
 #include <IRremote.hpp>
+//farbsensor
+#define SENSOR_S0 5
+#define SENSOR_S1 4
+#define SENSOR_S2 7
+#define SENSOR_S3 6
+#define SENSOR_OUT 8
 
+const int redmin = 22;
+const int redmax= 381;
+const int grumin = 22;
+const int grumax = 406;
+const int blumin = 15;
+const int blumax = 254;
+
+//USS
 const int sensPins[4][2] = {{2,3}, {0, 0}, {0, 0}, {0, 0}};
 int entfernung[4] = {0,0,0,0};
 
 void setup() {
+  //farbsensor
+  digitalWrite(SENSOR_S0, HIGH);
+  digitalWrite(SENSOR_S1, LOW);
+
+  pinMode(SENSOR_S0, OUTPUT);
+  pinMode(SENSOR_S1, OUTPUT);
+  pinMode(SENSOR_S2, OUTPUT);
+  pinMode(SENSOR_S3, OUTPUT);
+  pinMode(SENSOR_OUT, INPUT);
+  //USS
   pinMode(sensPins[0][1], OUTPUT); 
   pinMode(sensPins[0][0], INPUT);
   pinMode(34, OUTPUT);
@@ -52,6 +76,32 @@ void updateSensors(){
   for(int i=0;i<2; i++){
     updatesensor(i);
   }
+}
+void getRed(){
+  int frequency;
+  digitalWrite(SENSOR_S2, LOW);
+  digitalWrite(SENSOR_S3, LOW);
+  frequency = pulseIn(SENSOR_OUT, LOW);
+  map(frequency, redmin, redmax, 255, 0);
+}
+void getGruen(){
+  int frequency;
+  digitalWrite(SENSOR_S2, HIGH);
+  digitalWrite(SENSOR_S3, HIGH);
+  frequency = pulseIn(SENSOR_OUT, LOW);
+  map(frequency, grumin, grumax, 255, 0);
+}
+void getBlue(){
+  int frequency;
+  digitalWrite(SENSOR_S2, LOW);
+  digitalWrite(SENSOR_S3, HIGH);
+  frequency = pulseIn(SENSOR_OUT, LOW);
+  map(frequency, blumin, blumax, 255, 0);
+}
+void updatecolcor(){
+  getRed();
+  getGruen();
+  getBlue();
 }
 void USScheck(){
   for (int i=0; i<1;i++){
