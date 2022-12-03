@@ -26,3 +26,6 @@ abbiegen (3):
 0x1230 = Jungs wir fahren nach Rechts. //Kann nur von Index 1 gecallt werden und wird dann nacht hinten weiter gereicht.
 0x1231 = Jungs wir fahren nach Links. //Kann nur von Index 1 gecallt werden und wird dann nacht hinten weiter gereicht.
 
+Auto an Ampel (4):
+0x1240 = Autos sind bereit wir warten auf Grünes Signal
+
