@@ -187,9 +187,35 @@ void getBlue(){
   map(frequency, blumin, blumax, 255, 0);
 }
 void updatecolcor(){
+<<<<<<< HEAD
+  for (int i=0; i<3; i++){
+    getRed(i);
+    getGruen(i);
+    getBlue(i);
+  }
+}
+void farbcheck(){
+  //der in fahrtrichtung linke Sender ist IMMER 0 mitte 1 rechts 2
+  for (int sensor=0; sensor<3; sensor++){
+    for (int rgb=0; rgb<3; rgb++)
+      if (farbSensorVal[sensor][rgb]+10!=folgeFarbe[0]||farbSensorVal[sensor][rgb]-10!=folgeFarbe[0]){ // guckt ob der wehrt dem gesuchten wert entspricht
+        // tollerranz von 10 einheiten abweichung zum gesuchten wert
+        if (sensor == 0){
+          // nach rechts korigiren
+        }
+        if (sensor == 1){
+          // erstam nix
+        }
+        if (sensor == 2){
+          // nach links korigiren
+        }
+      }
+  }
+=======
   getRed();
   getGruen();
   getBlue();
+>>>>>>> 3c9f2aaeab687fa7fbeada68c83c4e2a5fe98893
 }
 void USScheck(){
   for (int i=0; i<1;i++){
