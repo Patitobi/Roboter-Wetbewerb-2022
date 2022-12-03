@@ -113,8 +113,8 @@ void StartGroup(int index){
     //Wir Arbeiten quasi einfach eine Check Liste ab mit allen Codes.
     if(hexvalue == 0x1201 || hexvalue == 0x1202 || hexvalue == 0x1203 || hexvalue == 0x1204){
       //Send das gelesene Signal nach vorne und hinten Weiter
-      SendIR(hexvalue, 1, 1);
-      SendIR(hexvalue, 1, 0);
+      SendIR(irrecv.decode(&results), 1, 1); //1x nach vorne
+      SendIR(irrecv.decode(&results), 1, 0); //1x nach hinten
       //Check das bekommene Signal ab
       if(hexvalue == 0x1201) Car1 = true;
       else if(0x1202) Car2 = true;
