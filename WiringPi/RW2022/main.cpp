@@ -41,7 +41,7 @@ class Reifen{
                 //pin auf go setzen für losfahren
                 digitalWrite(steuerpin, HIGH);
                 mode=true;
-            } else {
+            }else{
                 //pin auf stop setzen für stopen
                 digitalWrite(steuerpin, LOW);
                 mode=false;
