@@ -4,6 +4,18 @@
 #define RECHTS  1
 #define MITTE   0
 #define LINKS  -1
+#define VOR     1
+#define STOP    0
+#define ZURUECK-1
+
+// steuerung / drei relays pro seite 1 und 2 für plus und minus 3 ist für das stopen
+const int L1 = 0;
+const int L2 = 0;
+const int L3 = 0;
+
+const int R1 = 0;
+const int R2 = 0;
+const int R3 = 0;
 
 //farbsensor
 const int SENSOR_S0 = 5;
@@ -47,14 +59,22 @@ decode_results results; //erstelle Object in welches dann die Daten nach jedem s
 
 void setup() {
   //farbsensor
-  digitalWrite(SENSOR_S0, HIGH);
-  digitalWrite(SENSOR_S1, LOW);
-
   pinMode(SENSOR_S0, OUTPUT);
   pinMode(SENSOR_S1, OUTPUT);
   pinMode(SENSOR_S2, OUTPUT);
   pinMode(SENSOR_S3, OUTPUT);
   pinMode(SENSOR_OUT, INPUT);
+
+  pinMode(L1, OUTPUT);
+  pinMode(L2, OUTPUT);
+  pinMode(L3, OUTPUT);
+
+  pinMode(R1, OUTPUT);
+  pinMode(R2, OUTPUT);
+  pinMode(R3, OUTPUT);
+
+  digitalWrite(SENSOR_S0, HIGH);
+  digitalWrite(SENSOR_S1, LOW);
   //USS
   for (int i=0; i<4; i++){
     pinMode(sensPins[i][1], OUTPUT); 
@@ -75,20 +95,70 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(3), CodetobeexecutedonInterrupt, CHANGE); //wenn sich pin 3 ändert dann führe interruptcode aus
   Serial.begin(9600);
 }
-void Rreley(bool modus){//30
-  if (modus){
-    digitalWrite(30, HIGH);
-  } else {
-    digitalWrite(30, LOW);
+
+void reifen(int seite, int mode){
+  if (seite == 0||mode == STOP){
+    digitalWrite(R3, LOW);
+    digitalWrite(L3, LOW);
+
+    digitalWrite(R2, LOW);
+    digitalWrite(L2, LOW);
+  } 
+  else if(seite == 0||mode == VOR){
+    digitalWrite(R3, HIGH);
+    digitalWrite(R2, LOW);
+    digitalWrite(R1, LOW);
+
+    digitalWrite(L3, HIGH);
+    digitalWrite(L2, LOW);
+    digitalWrite(L1, LOW);
+  }else{
+    if (seite == -1){
+      if (mode == STOP){
+        digitalWrite(L3, LOW);
+        digitalWrite(L2, LOW);
+      } else if(mode == VOR){
+        digitalWrite(L3, HIGH);
+        digitalWrite(L2, LOW);
+        digitalWrite(L1, LOW);
+      } else if(mode == ZURUECK){
+        digitalWrite(L3, LOW);
+        digitalWrite(L2, HIGH);
+        digitalWrite(L1, HIGH);
+      }
+    }
+    if (seite == 1){
+      if (mode == STOP){
+        digitalWrite(R3, LOW);
+        digitalWrite(R2, LOW);
+      } else if(mode == VOR){
+        digitalWrite(R3, HIGH);
+        digitalWrite(R2, LOW);
+        digitalWrite(R1, LOW);
+      } else if(mode == ZURUECK){
+        digitalWrite(R3, LOW);
+        digitalWrite(R2, HIGH);
+        digitalWrite(R1, HIGH);
+      }
+    }
   }
 }
-void Lreley(int modus){//34
-  if (modus){
-    digitalWrite(34, HIGH);
-  } else {
-    digitalWrite(34, LOW);
-  }
-}
+// alter code
+// void Rreley(bool modus){//30
+//   if (modus){
+//     digitalWrite(30, HIGH);
+//   } else {
+//     digitalWrite(30, LOW);
+//   }
+// }
+// void Lreley(int modus){//34
+//   if (modus){
+//     digitalWrite(34, HIGH);
+//   } else {
+//     digitalWrite(34, LOW);
+//   }
+// }
+
 // für einzelne 
 void updatesensor(int sensnum){
   long duration;
@@ -168,11 +238,9 @@ void USScheck(){
   for (int i=0; i<1;i++){
     if (entfernung[i]<=200){
       Serial.println("stop");
-      Rreley(false);
-      Lreley(false);
+      reifen(0, STOP);
     } else {
-      Rreley(true);
-      Lreley(true);
+      reifen(0, VOR);
     }
   }
 }
