@@ -187,35 +187,9 @@ void getBlue(){
   map(frequency, blumin, blumax, 255, 0);
 }
 void updatecolcor(){
-<<<<<<< HEAD
-  for (int i=0; i<3; i++){
-    getRed(i);
-    getGruen(i);
-    getBlue(i);
-  }
-}
-void farbcheck(){
-  //der in fahrtrichtung linke Sender ist IMMER 0 mitte 1 rechts 2
-  for (int sensor=0; sensor<3; sensor++){
-    for (int rgb=0; rgb<3; rgb++)
-      if (farbSensorVal[sensor][rgb]+10!=folgeFarbe[0]||farbSensorVal[sensor][rgb]-10!=folgeFarbe[0]){ // guckt ob der wehrt dem gesuchten wert entspricht
-        // tollerranz von 10 einheiten abweichung zum gesuchten wert
-        if (sensor == 0){
-          // nach rechts korigiren
-        }
-        if (sensor == 1){
-          // erstam nix
-        }
-        if (sensor == 2){
-          // nach links korigiren
-        }
-      }
-  }
-=======
   getRed();
   getGruen();
   getBlue();
->>>>>>> 3c9f2aaeab687fa7fbeada68c83c4e2a5fe98893
 }
 void USScheck(){
   for (int i=0; i<1;i++){
@@ -238,7 +212,7 @@ void GetIR(){
         AmpelPing(0x1101);
       }else if(hexvalue == 0x1210){ //Ampel Anfahrt 
         //Geb Signal nach hinten weiter
-        SendIR(0x1210, 2, 0)
+        SendIR(0x1210, 2, 0);
         AmpelAnfahrt(); //Fängt ann an den nächsten mann anzufahren (7cm) und wartet dann
       }
       irrecv.resume(); //Reset + es wird wieder vom Pin auf Info gewartet.
@@ -279,7 +253,6 @@ void RedLineReached(){ //Muss von Farbsensor gecallt werden und kann auch nur vo
   SendIR(0x1210, 2, 0); //Stehen bleiben 2x nach hinten
   if(NuminReihe == 1) SendIR(0x1240, 2, 1); //If Abfrage nur zur Sicherheit. Eigentlich unnötig. //2. Vorderes Auto sendet Signal zur ampel damit Ampel anfängt zu agieren
   //Warte nun auf Ampel Signal und gebe wenn Ampel Signal da das Signal an die hinteren weiter
-  hexvalue = 0; //einmal kurz vorher clearen
   while(hexvalue != 0x1101){}
   if(hexvalue == 0x1101){ //if zur sicherheit falls interrupt was durcheinander bringt
     //send nach hinten weiter damit jeder los fährt
