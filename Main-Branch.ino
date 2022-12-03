@@ -33,10 +33,6 @@ const int blumax = 254;
 // gemessende werte werden hier gespeichert
 int farbSensorVal[3][3];
 
-//USS
-const int sensPins[4][2] = {{2,3}, {0, 0}, {0, 0}, {0, 0}};
-int entfernung[4];
-
 //Allgemeine Variablen
 // definirt in welche 
 int fahrRichtung = 0;
@@ -44,6 +40,12 @@ int fahrRichtung = 0;
 int folgeFarbe[3]; // die variable die speicher welcher farbe gefolgt werden soll in rgb angabe
 //!!! wichtig hier bei ist das die angaben nicht aus dem internet sind sonder die werte die wir auf der strecke messen !!!
 
+
+//USS
+const int sensPins[4][2] = {{2,3}, {0, 0}, {0, 0}, {0, 0}};
+int entfernung[4] = {0,0,0,0};
+
+//Allgemeine Variablen
 int NuminReihe;
 String NextMoveBehindMe; //Hat das Vorhaben von dem Auto vor sich in sich
 String NextMoveInfrontOfMe; //Hat das Vorhaben von dem Auto hinter sich in sich
@@ -57,6 +59,41 @@ const String hexcode3 = "0x1113";
 IRrecv irrecv(RECV_PIN); //Empfänger Pin
 decode_results results; //erstelle Object in welches dann die Daten nach jedem scan rein wandern
 
+void SendIR(long Code, int repeat, int dir){ //dir gibt an ob nach vorne oder nach hinten
+  if(dir == 1){ //Send to front
+    for(int i = 0; i != repeat; i++){
+      IrSender.sendSony(Code, 20);
+      delay(1000); //Muss min 5 millisek sonst erkennt der Empfänger das als ein einziges
+    }
+  }else if(dir == 0){ //Send to back
+    for(int i = 0; i != repeat; i++){
+      IrSender.sendSony(Code, 20);
+      delay(1000); //Muss min 5 millisek sonst erkennt der Empfänger das als ein einziges
+    }
+  }
+}
+void AmpelPing(long Code){
+  //Wenn dieses Auto erster in der Reihe dann reiche die Info nach hinten weiter.
+  if(NuminReihe != 5){
+    //Pass IR Signal to the Cars behind
+    SendIR(Code, 3, 0); //Send 3x hinter dich (0 =  nach hinten)
+  }
+}
+void GetIR(){
+  //code der nicht unterbrochen werden darf
+  if (irrecv.decode(&results)){ //Wenn irgendwas auf dem recvPin Gelesen wird dann 
+      Serial.println(results.value, HEX); //Print in den Arduino Log (HEX)
+      String hexvalue = String(results.value, HEX); //Hier kurz eine variable machen um nicht in allen if statements die funktion durch zu führen (performance)
+      if(hexvalue.indexOf("0x11") > 0){ //Schaut ob 0x11 im String irgendwo vorhanden ist. Denn 0x11 sind die ersten 2 ziffern des ampel hex codes
+        AmpelPing(results.value);
+      }
+      irrecv.resume(); //Reset + es wird wieder vom Pin auf Info gewartet.
+  }
+}
+void CodetobeexecutedonInterrupt(){
+  GetIR();
+}
+
 void setup() {
   //farbsensor
   pinMode(SENSOR_S0, OUTPUT);
@@ -65,6 +102,10 @@ void setup() {
   pinMode(SENSOR_S3, OUTPUT);
   pinMode(SENSOR_OUT, INPUT);
 
+  digitalWrite(SENSOR_S0, HIGH);
+  digitalWrite(SENSOR_S1, LOW);
+
+// steuerung
   pinMode(L1, OUTPUT);
   pinMode(L2, OUTPUT);
   pinMode(L3, OUTPUT);
@@ -73,18 +114,13 @@ void setup() {
   pinMode(R2, OUTPUT);
   pinMode(R3, OUTPUT);
 
-  digitalWrite(SENSOR_S0, HIGH);
-  digitalWrite(SENSOR_S1, LOW);
   //USS
   for (int i=0; i<4; i++){
     pinMode(sensPins[i][1], OUTPUT); 
     pinMode(sensPins[i][0], INPUT);
   }
-  //pinMode(sensPins[0][1], OUTPUT); 
-  //pinMode(sensPins[0][0], INPUT);
   pinMode(34, OUTPUT);
   pinMode(30, OUTPUT);
-  
   //IR
   //Recieve IR
   irrecv.enableIRIn(); //Fang an zu Lesen
@@ -95,7 +131,6 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(3), CodetobeexecutedonInterrupt, CHANGE); //wenn sich pin 3 ändert dann führe interruptcode aus
   Serial.begin(9600);
 }
-
 void reifen(int seite, int mode){
   if (seite == 0||mode == STOP){
     digitalWrite(R3, LOW);
@@ -143,22 +178,6 @@ void reifen(int seite, int mode){
     }
   }
 }
-// alter code
-// void Rreley(bool modus){//30
-//   if (modus){
-//     digitalWrite(30, HIGH);
-//   } else {
-//     digitalWrite(30, LOW);
-//   }
-// }
-// void Lreley(int modus){//34
-//   if (modus){
-//     digitalWrite(34, HIGH);
-//   } else {
-//     digitalWrite(34, LOW);
-//   }
-// }
-
 // für einzelne 
 void updatesensor(int sensnum){
   long duration;
@@ -185,8 +204,6 @@ void updateSensors(){
     updatesensor(i);
   }
 }
-// functionen zum messen der farben
-// immer gleich nur der filter ändert sich je nach farbe
 void getRed(int sensnum){
   int frequency;
   digitalWrite(SENSOR_S2, LOW);
@@ -209,7 +226,6 @@ void getBlue(int sensnum){
   farbSensorVal[sensnum][2] = map(frequency, blumin, blumax, 255, 0);
 }
 void updatecolcor(){
-  // durschleuft für jeden sensor einla jede farbe
   for (int i=0; i<3; i++){
     getRed(i);
     getGruen(i);
@@ -244,46 +260,11 @@ void USScheck(){
     }
   }
 }
-void GetIR(){
-  //code der nicht unterbrochen werden darf
-  if (irrecv.decode(&results)){ //Wenn irgendwas auf dem recvPin Gelesen wird dann 
-      Serial.println(results.value, HEX); //Print in den Arduino Log (HEX)
-      String hexvalue = String(results.value, HEX); //Hier kurz eine variable machen um nicht in allen if statements die funktion durch zu führen (performance)
-      if(hexvalue.indexOf("0x11") > 0){ //Schaut ob 0x11 im String irgendwo vorhanden ist. Denn 0x11 sind die ersten 2 ziffern des ampel hex codes
-        AmpelPing(results.value);
-      }
-      irrecv.resume(); //Reset + es wird wieder vom Pin auf Info gewartet.
-  }
-}
-void SendIR(long Code, int repeat, int dir){ //dir gibt an ob nach vorne oder nach hinten
-  if(dir == 1){ //Send to front
-    for(int i = 0; i != repeat; i++){
-      IrSender.sendSony(Code, 20);
-      delay(1000); //Muss min 5 millisek sonst erkennt der Empfänger das als ein einziges
-    }
-  }else if(dir == 0){ //Send to back
-    for(int i = 0; i != repeat; i++){
-      IrSender.sendSony(Code, 20);
-      delay(1000); //Muss min 5 millisek sonst erkennt der Empfänger das als ein einziges
-    }
-  }
-}
-void CodetobeexecutedonInterrupt(){
-  GetIR();
-}
-void AmpelPing(long Code){
-  //Wenn dieses Auto erster in der Reihe dann reiche die Info nach hinten weiter.
-  if(NuminReihe != 5){
-    //Pass IR Signal to the Cars behind
-    SendIR(Code, 3, 0); //Send 3x hinter dich (0 =  nach hinten)
-  }
-}
 void update(){
   updatesensor(0);
 }
 void machen(){
   USScheck();
-  farbcheck();
 }
 void loop() {
   update();
