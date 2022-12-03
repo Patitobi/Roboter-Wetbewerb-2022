@@ -112,6 +112,10 @@ void StartGroup(int index){
     //Wass wir hier machen ist wir warten biss alle Signale von allen Autos einmal bei einem Auto angekommen sind
     //Wir Arbeiten quasi einfach eine Check Liste ab mit allen Codes.
     if(hexvalue == 0x1201 || hexvalue == 0x1202 || hexvalue == 0x1203 || hexvalue == 0x1204){
+      //Send das gelesene Signal nach vorne und hinten Weiter
+      SendIR(hexvalue, 1, 1);
+      SendIR(hexvalue, 1, 0);
+      //Check das bekommene Signal ab
       if(hexvalue == 0x1201) Car1 = true;
       else if(0x1202) Car2 = true;
       else if(0x1203) Car3 = true;
