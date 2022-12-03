@@ -1,28 +1,12 @@
 #include <Arduino.h>
 #include <IRremote.hpp>
 
-#define RECHTS  1
-#define MITTE   0
-#define LINKS  -1
-#define VOR     1
-#define STOP    0
-#define ZURUECK-1
-
-// steuerung / drei relays pro seite 1 und 2 für plus und minus 3 ist für das stopen
-const int L1 = 0;
-const int L2 = 0;
-const int L3 = 0;
-
-const int R1 = 0;
-const int R2 = 0;
-const int R3 = 0;
-
 //farbsensor
-const int SENSOR_S0 = 5;
-const int SENSOR_S1 = 4;
-const int SENSOR_S2 = 7;
-const int SENSOR_S3 = 6;
-const int SENSOR_OUT =8;
+#define SENSOR_S0 5
+#define SENSOR_S1 4
+#define SENSOR_S2 7
+#define SENSOR_S3 6
+#define SENSOR_OUT 8
 
 const int redmin = 22;
 const int redmax= 381;
@@ -30,17 +14,6 @@ const int grumin = 22;
 const int grumax = 406;
 const int blumin = 15;
 const int blumax = 254;
-
-// gemessende werte werden hier gespeichert
-int farbSensorVal[3][3];
-
-//Allgemeine Variablen
-// definirt in welche 
-int fahrRichtung = 0;
-
-int folgeFarbe[3]; // die variable die speicher welcher farbe gefolgt werden soll in rgb angabe
-//!!! wichtig hier bei ist das die angaben nicht aus dem internet sind sonder die werte die wir auf der strecke messen !!!
-
 
 //USS
 const int sensPins[4][2] = {{2,3}, {0, 0}, {0, 0}, {0, 0}};
@@ -64,6 +37,35 @@ bool Car4;
 IRrecv irrecv(RECV_PIN); //Empfänger Pin
 decode_results results; //erstelle Object in welches dann die Daten nach jedem scan rein wandern
 
+void setup() {
+  //farbsensor
+  digitalWrite(SENSOR_S0, HIGH);
+  digitalWrite(SENSOR_S1, LOW);
+
+  pinMode(SENSOR_S0, OUTPUT);
+  pinMode(SENSOR_S1, OUTPUT);
+  pinMode(SENSOR_S2, OUTPUT);
+  pinMode(SENSOR_S3, OUTPUT);
+  pinMode(SENSOR_OUT, INPUT);
+  //USS
+  pinMode(sensPins[0][1], OUTPUT); 
+  pinMode(sensPins[0][0], INPUT);
+  pinMode(34, OUTPUT);
+  pinMode(30, OUTPUT);
+  //pinMode(sensPins[1][1], OUTPUT); 
+  //pinMode(sensPins[1][0], INPUT); 
+  //IR
+  //Recieve IR
+  irrecv.enableIRIn(); //Fang an zu Lesen
+  irrecv.blink13(true); //Default Pin auf dem Board welcher blinkt wenn Pin was ließt
+  //Send IR
+  pinMode(LED_BUILTIN, OUTPUT);
+  IrSender.begin(3);
+  attachInterrupt(digitalPinToInterrupt(3), CodetoBeExecutedOnInterrupt, CHANGE); //wenn sich pin 3 ändert dann führe interruptcode aus
+  Serial.begin(9600);
+  //Start sync with other cars
+  Startsync();
+}
 
 void Startsync(){
   while(!synced){ //Wartet auf Fernbedienung auf zuweisung von nummer
@@ -123,51 +125,18 @@ void StartGroup(int index){
   }
 }
 
-void reifen(int seite, int mode){
-  if (seite == 0||mode == STOP){
-    digitalWrite(R3, LOW);
-    digitalWrite(L3, LOW);
-
-    digitalWrite(R2, LOW);
-    digitalWrite(L2, LOW);
-  } 
-  else if(seite == 0||mode == VOR){
-    digitalWrite(R3, HIGH);
-    digitalWrite(R2, LOW);
-    digitalWrite(R1, LOW);
-
-    digitalWrite(L3, HIGH);
-    digitalWrite(L2, LOW);
-    digitalWrite(L1, LOW);
-  }else{
-    if (seite == -1){
-      if (mode == STOP){
-        digitalWrite(L3, LOW);
-        digitalWrite(L2, LOW);
-      } else if(mode == VOR){
-        digitalWrite(L3, HIGH);
-        digitalWrite(L2, LOW);
-        digitalWrite(L1, LOW);
-      } else if(mode == ZURUECK){
-        digitalWrite(L3, LOW);
-        digitalWrite(L2, HIGH);
-        digitalWrite(L1, HIGH);
-      }
-    }
-    if (seite == 1){
-      if (mode == STOP){
-        digitalWrite(R3, LOW);
-        digitalWrite(R2, LOW);
-      } else if(mode == VOR){
-        digitalWrite(R3, HIGH);
-        digitalWrite(R2, LOW);
-        digitalWrite(R1, LOW);
-      } else if(mode == ZURUECK){
-        digitalWrite(R3, LOW);
-        digitalWrite(R2, HIGH);
-        digitalWrite(R1, HIGH);
-      }
-    }
+void Rreley(bool modus){//30
+  if (modus){
+    digitalWrite(30, HIGH);
+  } else {
+    digitalWrite(30, LOW);
+  }
+}
+void Lreley(int modus){//34
+  if (modus){
+    digitalWrite(34, HIGH);
+  } else {
+    digitalWrite(34, LOW);
   }
 }
 // für einzelne 
@@ -196,59 +165,41 @@ void updateSensors(){
     updatesensor(i);
   }
 }
-void getRed(int sensnum){
+void getRed(){
   int frequency;
   digitalWrite(SENSOR_S2, LOW);
   digitalWrite(SENSOR_S3, LOW);
   frequency = pulseIn(SENSOR_OUT, LOW);
-  farbSensorVal[sensnum][0] = map(frequency, redmin, redmax, 255, 0);
+  map(frequency, redmin, redmax, 255, 0);
 }
 void getGruen(){
   int frequency;
   digitalWrite(SENSOR_S2, HIGH);
   digitalWrite(SENSOR_S3, HIGH);
   frequency = pulseIn(SENSOR_OUT, LOW);
-  farbSensorVal[sensnum][1] = map(frequency, grumin, grumax, 255, 0);
+  map(frequency, grumin, grumax, 255, 0);
 }
 void getBlue(){
   int frequency;
   digitalWrite(SENSOR_S2, LOW);
   digitalWrite(SENSOR_S3, HIGH);
   frequency = pulseIn(SENSOR_OUT, LOW);
-  farbSensorVal[sensnum][2] = map(frequency, blumin, blumax, 255, 0);
+  map(frequency, blumin, blumax, 255, 0);
 }
 void updatecolcor(){
-  for (int i=0; i<3; i++){
-    getRed(i);
-    getGruen(i);
-    getBlue(i);
-  }
-}
-void farbcheck(){
-  //der in fahrtrichtung linke sender ist IMMER 0 mitte 1 rechts 2
-  for (int sensor=0; sensor<3; sensor++){
-    for (int rgb=0; rgb<3; rgb++)
-      if (farbSensorVal[sensor][rgb]+10!=folgeFarbe[0]||farbSensorVal[sensor][rgb]-10!=folgeFarbe[0]){ // guckt ob der wehrt dem gesuchten wert entspricht
-        // tollerranz von 10 einheiten abweichung zum gesuchten wert
-        if (sensor == 0){
-          // nach rechts korigiren
-        }
-        if (sensor == 1){
-          // erstam nix
-        }
-        if (sensor == 2){
-          // nach links korigiren
-        }
-      }
-    }
+  getRed();
+  getGruen();
+  getBlue();
 }
 void USScheck(){
   for (int i=0; i<1;i++){
     if (entfernung[i]<=200){
       Serial.println("stop");
-      reifen(0, STOP);
+      Rreley(false);
+      Lreley(false);
     } else {
-      reifen(0, VOR);
+      Rreley(true);
+      Lreley(true);
     }
   }
 }
@@ -261,7 +212,7 @@ void GetIR(){
         AmpelPing(0x1101);
       }else if(hexvalue == 0x1210){ //Ampel Anfahrt 
         //Geb Signal nach hinten weiter
-        SendIR(0x1210, 2, 0)
+        SendIR(0x1210, 2, 0);
         AmpelAnfahrt(); //Fängt ann an den nächsten mann anzufahren (7cm) und wartet dann
       }
       irrecv.resume(); //Reset + es wird wieder vom Pin auf Info gewartet.
@@ -302,7 +253,6 @@ void RedLineReached(){ //Muss von Farbsensor gecallt werden und kann auch nur vo
   SendIR(0x1210, 2, 0); //Stehen bleiben 2x nach hinten
   if(NuminReihe == 1) SendIR(0x1240, 2, 1); //If Abfrage nur zur Sicherheit. Eigentlich unnötig. //2. Vorderes Auto sendet Signal zur ampel damit Ampel anfängt zu agieren
   //Warte nun auf Ampel Signal und gebe wenn Ampel Signal da das Signal an die hinteren weiter
-  hexvalue = 0; //einmal kurz vorher clearen
   while(hexvalue != 0x1101){}
   if(hexvalue == 0x1101){ //if zur sicherheit falls interrupt was durcheinander bringt
     //send nach hinten weiter damit jeder los fährt
@@ -311,9 +261,11 @@ void RedLineReached(){ //Muss von Farbsensor gecallt werden und kann auch nur vo
 }
 void AmpelAnfahrt(){//Wird aufgerufen um dem vordermann bis auf 5cm aufzufahren und dann zu warten bis Grünes Licht signal vom vordermann kommt.
   //Fahr so lange an bis was 7 cm vor deiner nase ist dann bleib stehen und warte einfach nur bis das "Ampel ist grün" Signal kommt.
-  reifen(MITTE, VOR);
+  Rreley(true);
+  Lreley(true);
   while(entfernung[0] > 70){} //Warte bis auto vorne 7 cm nah ist
-  reifen(MITTE, STOP);
+  Rreley(false); //Stopp
+  Lreley(false);
 }
 void update(){
   updatesensor(0);
@@ -321,45 +273,6 @@ void update(){
 }
 void machen(){
   USScheck();
-}
-
-void setup() {
-  //farbsensor
-  pinMode(SENSOR_S0, OUTPUT);
-  pinMode(SENSOR_S1, OUTPUT);
-  pinMode(SENSOR_S2, OUTPUT);
-  pinMode(SENSOR_S3, OUTPUT);
-  pinMode(SENSOR_OUT, INPUT);
-
-  digitalWrite(SENSOR_S0, HIGH);
-  digitalWrite(SENSOR_S1, LOW);
-
-  // steuerung
-  pinMode(L1, OUTPUT);
-  pinMode(L2, OUTPUT);
-  pinMode(L3, OUTPUT);
-
-  pinMode(R1, OUTPUT);
-  pinMode(R2, OUTPUT);
-  pinMode(R3, OUTPUT); 
-  //USS
-  pinMode(34, OUTPUT);
-  pinMode(30, OUTPUT);
-  for (int i=0; i<4; i++){
-    pinMode(sensPins[i][1], OUTPUT); 
-    pinMode(sensPins[i][0], INPUT);
-  }
-  //IR
-  //Recieve IR
-  irrecv.enableIRIn(); //Fang an zu Lesen
-  irrecv.blink13(true); //Default Pin auf dem Board welcher blinkt wenn Pin was ließt
-  //Send IR
-  pinMode(LED_BUILTIN, OUTPUT);
-  IrSender.begin(3);
-  attachInterrupt(digitalPinToInterrupt(3), CodetoBeExecutedOnInterrupt, CHANGE); //wenn sich pin 3 ändert dann führe interruptcode aus
-  Serial.begin(9600);
-  //Start sync with other cars
-  Startsync();
 }
 void loop() {
   update();
