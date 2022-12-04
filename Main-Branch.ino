@@ -17,6 +17,8 @@ const int R1 = 0;
 const int R2 = 0;
 const int R3 = 0;
 
+const int einGradeDrechen = 1; // anzahl an sekunden die wir brauchen um uns 1 grad zu drehen 
+
 //farbsensor
 const int SENSOR_S0 = 5;
 const int SENSOR_S1 = 4;
@@ -45,6 +47,7 @@ int folgeFarbe[3]; // die variable die speicher welcher farbe gefolgt werden sol
 //USS
 const int sensPins[4][2] = {{2,3}, {0, 0}, {0, 0}, {0, 0}};
 int entfernung[4] = {0,0,0,0};
+int durschnittaus = 10;
 
 //Allgemeine Variablen
 int NuminReihe;
@@ -64,9 +67,9 @@ bool Car4;
 IRrecv irrecv(RECV_PIN); //Empfänger Pin
 decode_results results; //erstelle Object in welches dann die Daten nach jedem scan rein wandern
 
-
-
 void reifen(int seite, int mode){
+  // es werden die relays immer so gesetzt das wir in die angegebene richtung fahren
+  // seite 0 bedeutet das beide seiten angesproche werden
   if (seite == 0||mode == STOP){
     digitalWrite(R3, LOW);
     digitalWrite(L3, LOW);
@@ -83,6 +86,7 @@ void reifen(int seite, int mode){
     digitalWrite(L2, LOW);
     digitalWrite(L1, LOW);
   }else{
+    // für links
     if (seite == -1){
       if (mode == STOP){
         digitalWrite(L3, LOW);
@@ -97,6 +101,7 @@ void reifen(int seite, int mode){
         digitalWrite(L1, HIGH);
       }
     }
+    // für rechts
     if (seite == 1){
       if (mode == STOP){
         digitalWrite(R3, LOW);
@@ -113,8 +118,21 @@ void reifen(int seite, int mode){
     }
   }
 }
+
+void drehen(int richtung, int grade){
+  if (richtung == RECHTS){
+    reifen(LINKS, VOR);// setzt motoren so das wir uns an der stelle drehen in die angegebene richtung
+    reifen(RECHTS, ZURUECK);
+    delay(einGradeDrechen * grade);// delayt füe die zeit die wir brachen um uns für die bestimmte grade zahl zu drehen
+  } else if (richtung == LINKS){
+    reifen(LINKS, ZURUECK);// setzt motoren so das wir uns an der stelle drehen in die angegebene richtung
+    reifen(RECHTS, VOR);
+    delay(einGradeDrechen * grade); // delayt füe die zeit die wir brachen um uns für die bestimmte grade zahl zu drehen
+  }
+}
+
 // für einzelne 
-void updatesensor(int sensnum){
+int updatesensor(int sensnum){
   long duration;
   // Clears the trigPin condition
   digitalWrite(sensPins[sensnum][1], LOW);
@@ -126,17 +144,31 @@ void updatesensor(int sensnum){
   // Reads the echoPin, returns the sound wave travel time in microseconds
   duration = pulseIn(sensPins[sensnum][0], HIGH);
   // Calculating the distance
-  entfernung[sensnum] =  duration * 0.34 / 2; // Speed of sound wave divided by 2 (go and back)
-  // Displays the distance on the Serial Monitor
-  Serial.print("Distance: ");
-  Serial.print(entfernung[sensnum]);
-  Serial.println(" mm");
-  Serial.print(sensnum);
+  return duration * 0.34 / 2; // Speed of sound wave divided by 2 (go and back)
 }
 // zum updaten von allen 
 void updateSensors(){
+  int temp;
   for(int i=0;i<2; i++){
-    updatesensor(i);
+    entfernung[i] = 0;
+    temp = 0;
+    for (int x=0; x<durschnittaus; x++){
+      temp = updatesensor(i);
+      if (temp > 1200){
+        temp = updatesensor(i);
+      }
+    }
+    entfernung[i] /= durschnittaus;
+  }
+}
+void USScheck(){
+  for (int i=0; i<1;i++){
+    if (entfernung[i]<=200){
+      Serial.println("stop");
+      reifen(0, STOP);
+    } else {
+      reifen(0, VOR);
+    }
   }
 }
 void getRed(int sensnum){
@@ -183,16 +215,6 @@ void farbcheck(){
           // nach links korigiren
         }
       }
-  }
-}
-void USScheck(){
-  for (int i=0; i<1;i++){
-    if (entfernung[i]<=200){
-      Serial.println("stop");
-      reifen(0, STOP);
-    } else {
-      reifen(0, VOR);
-    }
   }
 }
 void SendIR(long Code, int repeat, int dir){ //dir gibt an ob nach vorne oder nach hinten
