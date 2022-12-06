@@ -26,12 +26,15 @@ const int SENSOR_S2 = 7;
 const int SENSOR_S3 = 6;
 const int SENSOR_OUT =8;
 
-const int redmin = 22;
-const int redmax= 381;
-const int grumin = 22;
-const int grumax = 406;
-const int blumin = 15;
-const int blumax = 254;
+const int redmin = 28;
+const int redmax= 178;
+const int grumin = 26;
+const int grumax = 173;
+const int blumin = 18;
+const int blumax = 112;
+
+// 0 = Rot 1 = Schwarz 2 = Weiß 3 = Gelbs
+int FarbeUnterMir = -1;
 
 // gemessende werte werden hier gespeichert
 int farbSensorVal[3][3];
@@ -118,7 +121,6 @@ void reifen(int seite, int mode){
     }
   }
 }
-
 void drehen(int richtung, int grade){
   if (richtung == RECHTS){
     reifen(LINKS, VOR);// setzt motoren so das wir uns an der stelle drehen in die angegebene richtung
@@ -149,24 +151,32 @@ int updatesensor(int sensnum){
 // zum updaten von allen 
 void updateSensors(){
   int temp;
-  for(int i=0;i<2; i++){
+  for(int i=0;i<1; i++){
     entfernung[i] = 0;
     temp = 0;
     for (int x=0; x<durschnittaus; x++){
       temp = updatesensor(i);
-      if (temp > 1200){
+      if (temp > 1200||temp<0){
         temp = updatesensor(i);
       }
+      entfernung[i]+=temp;
     }
     entfernung[i] /= durschnittaus;
+    Serial.print("entfernung");
+    Serial.println(entfernung[i]);
   }
 }
 void USScheck(){
   for (int i=0; i<1;i++){
-    if (entfernung[i]<=200){
+    if (entfernung[i]<=300){
       Serial.println("stop");
+      digitalWrite(30, LOW);
+      digitalWrite(34, LOW);
+      
       reifen(0, STOP);
     } else {
+      digitalWrite(30, HIGH);
+      digitalWrite(34, HIGH);
       reifen(0, VOR);
     }
   }
@@ -177,6 +187,10 @@ void getRed(int sensnum){
   digitalWrite(SENSOR_S3, LOW);
   frequency = pulseIn(SENSOR_OUT, LOW);
   farbSensorVal[sensnum][0] = map(frequency, redmin, redmax, 255, 0);
+  Serial.print("rot =  ");
+  Serial.print(farbSensorVal[sensnum][0]);
+  //Serial.print(frequency);
+  Serial.print("      ");
 }
 void getGruen(int sensnum){
   int frequency;
@@ -184,6 +198,10 @@ void getGruen(int sensnum){
   digitalWrite(SENSOR_S3, HIGH);
   frequency = pulseIn(SENSOR_OUT, LOW);
   farbSensorVal[sensnum][1] = map(frequency, grumin, grumax, 255, 0);
+  Serial.print("greun =  ");
+  Serial.print(farbSensorVal[sensnum][1]);
+  //Serial.print(frequency);
+  Serial.print("      ");
 }
 void getBlue(int sensnum){
   int frequency;
@@ -191,13 +209,38 @@ void getBlue(int sensnum){
   digitalWrite(SENSOR_S3, HIGH);
   frequency = pulseIn(SENSOR_OUT, LOW);
   farbSensorVal[sensnum][2] = map(frequency, blumin, blumax, 255, 0);
+  Serial.print("blau = ");
+  Serial.print(farbSensorVal[sensnum][2]);
+  //Serial.print(frequency);
+  Serial.println("      ");
+}
+void setFarbe(){
+  for (int sensnum = 0; sensnum<1; sensnum++){
+    if ((farbSensorVal[sensnum][0] <= 160 && farbSensorVal[sensnum][0]>= 100) && (farbSensorVal[sensnum][1]<=70 && farbSensorVal[sensnum][1 ]>= 10) && (farbSensorVal[sensnum][2] <= 70 && farbSensorVal[sensnum][2] >= 20)){
+      FarbeUnterMir = 0;
+    }
+    else if ((farbSensorVal[sensnum][0] <= 21) && (farbSensorVal[sensnum][1]<=25) && (farbSensorVal[sensnum][2] <= 40)){
+      FarbeUnterMir = 1;
+    }
+    else if ((farbSensorVal[sensnum][0]>= 225) && (farbSensorVal[sensnum][1] >= 225) && (farbSensorVal[sensnum][2] >= 225)){
+      FarbeUnterMir = 2;
+    }
+    else if ((farbSensorVal[sensnum][0] <= 140 && farbSensorVal[sensnum][0]>= 114) && (farbSensorVal[sensnum][1]<=112 && farbSensorVal[sensnum][1]>= 98) && (farbSensorVal[sensnum][2] <= 74 && farbSensorVal[sensnum][2] >= 49)){
+      FarbeUnterMir = 3;
+    }
+    else {
+      FarbeUnterMir = -1;
+    }
+  }
+  Serial.println(FarbeUnterMir);
 }
 void updatecolcor(){
-  for (int i=0; i<3; i++){
+  for (int i=0; i<1; i++){
     getRed(i);
     getGruen(i);
     getBlue(i);
   }
+  setFarbe();
 }
 void farbcheck(){
   //der in fahrtrichtung linke sender ist IMMER 0 mitte 1 rechts 2
@@ -336,7 +379,7 @@ void Startsync(){
   }
 }
 void update(){
-  updatesensor(0);
+  //updateSensors();
   updatecolcor();
 }
 void machen(){
@@ -379,10 +422,10 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(3), CodetoBeExecutedOnInterrupt, CHANGE); //wenn sich pin 3 ändert dann führe interruptcode aus
   Serial.begin(9600);
   //Start sync with other cars
-  Startsync();
+  //Startsync();
 }
-void loop() {
+void loop(){
   update();
-  
-  machen();
+  delay(200);
+  //machen();
 }
