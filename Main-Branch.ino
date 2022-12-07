@@ -9,13 +9,13 @@
 #define ZURUECK -1
 
 // steuerung / drei relays pro seite 1 und 2 für plus und minus 3 ist für das stopen
-const int L1 = 0;
-const int L2 = 0;
-const int L3 = 0;
+const int L1 = 44;
+//const int L2 = 0;
+//const int L3 = 0;
 
-const int R1 = 0;
-const int R2 = 0;
-const int R3 = 0;
+const int R1 = 46;
+//const int R2 = 0;
+//const int R3 = 0;
 
 const int einGradeDrechen = 1; // anzahl an sekunden die wir brauchen um uns 1 grad zu drehen 
 
@@ -33,17 +33,13 @@ const int grumax = 173;
 const int blumin = 18;
 const int blumax = 112;
 
-// 0 = Rot 1 = Schwarz 2 = Weiß 3 = Gelbs
+// 0 = Rot; 1 = Schwarz; 2 = Weiß; 3 = Gelbs
 int FarbeUnterMir = -1;
 
 // gemessende werte werden hier gespeichert
 int farbSensorVal[3][3];
 
-//Allgemeine Variablen
-// definirt in welche 
-int fahrRichtung = 0;
-
-int folgeFarbe[3]; // die variable die speicher welcher farbe gefolgt werden soll in rgb angabe
+int folgeFarbe = 1; // die variable die speicher welcher farbe gefolgt werden soll in rgb angabe
 //!!! wichtig hier bei ist das die angaben nicht aus dem internet sind sonder die werte die wir auf der strecke messen !!!
 
 
@@ -71,25 +67,37 @@ IRrecv irrecv(RECV_PIN); //Empfänger Pin
 decode_results results; //erstelle Object in welches dann die Daten nach jedem scan rein wandern
 
 void reifen(int seite, int mode){
+  if (seite == 0){
+    if (mode==STOP){
+      digitalWrite(L1, LOW);
+      digitalWrite(R1, LOW);
+    }
+    if(mode==VOR){
+      digitalWrite(L1, HIGH);
+      digitalWrite(R1, HIGH);
+    }
+  }
   // es werden die relays immer so gesetzt das wir in die angegebene richtung fahren
   // seite 0 bedeutet das beide seiten angesproche werden
+  /*
   if (seite == 0||mode == STOP){
-    digitalWrite(R3, LOW);
-    digitalWrite(L3, LOW);
+     digitalWrite(R3, LOW);
+     digitalWrite(L3, LOW);
 
-    digitalWrite(R2, LOW);
-    digitalWrite(L2, LOW);
+     digitalWrite(R2, LOW);
+     digitalWrite(L2, LOW);
+
   } 
   else if(seite == 0||mode == VOR){
-    digitalWrite(R3, HIGH);
-    digitalWrite(R2, LOW);
-    digitalWrite(R1, LOW);
+     digitalWrite(R3, HIGH);
+     digitalWrite(R2, LOW);
+     digitalWrite(R1, LOW);
 
-    digitalWrite(L3, HIGH);
-    digitalWrite(L2, LOW);
-    digitalWrite(L1, LOW);
+     digitalWrite(L3, HIGH);
+     digitalWrite(L2, LOW);
+     digitalWrite(L1, LOW);
   }else{
-    // für links
+     für links
     if (seite == -1){
       if (mode == STOP){
         digitalWrite(L3, LOW);
@@ -119,7 +127,7 @@ void reifen(int seite, int mode){
         digitalWrite(R1, HIGH);
       }
     }
-  }
+  }*/
 }
 void drehen(int richtung, int grade){
   if (richtung == RECHTS){
@@ -241,23 +249,25 @@ void updatecolcor(){
     getBlue(i);
   }
   setFarbe();
-}
-void farbcheck(){
-  //der in fahrtrichtung linke sender ist IMMER 0 mitte 1 rechts 2
-  for (int sensor=0; sensor<3; sensor++){
-    for (int rgb=0; rgb<3; rgb++)
-      if (farbSensorVal[sensor][rgb]+10!=folgeFarbe[0]||farbSensorVal[sensor][rgb]-10!=folgeFarbe[0]){ // guckt ob der wehrt dem gesuchten wert entspricht
-        // tollerranz von 10 einheiten abweichung zum gesuchten wert
-        if (sensor == 0){
-          // nach rechts korigiren
-        }
-        if (sensor == 1){
-          // erstam nix
-        }
-        if (sensor == 2){
-          // nach links korigiren
-        }
-      }
+  switch (FarbeUnterMir)
+  {
+  case 0: // wenn rot
+    Serial.println("rot");
+    reifen(0, STOP);
+    break;
+  case 1: // wenn Schwarß
+    Serial.println("Schwarz");
+    reifen(0, VOR);
+    break;
+  case 2: // wenn Weiß
+    Serial.println("Weiß");
+    break;
+  case 3: // wenn Gelb
+    Serial.println("Gelb");
+    break;
+  default: // wenn nicht erkennbar
+    Serial.println("NULL");
+    break;
   }
 }
 void SendIR(long Code, int repeat, int dir){ //dir gibt an ob nach vorne oder nach hinten
@@ -312,6 +322,7 @@ void CodetoBeExecutedOnInterrupt(){
 void RedLineReached(){ //Muss von Farbsensor gecallt werden und kann auch nur von index 1 gecallt werden
   //Ping hinter dich das die zu dir bis auf eine bestimmte distanz auffahren sollen und dann auch stehen bleiben.
   //Dann Ping die Ampel an das die anfangen soll ihr Programm abzurfen -> (Ampel wartet 8 Sekunden und gibt dann grünes Signal via IR)
+  reifen(0, STOP);
   SendIR(0x1210, 2, 0); //Stehen bleiben 2x nach hinten
   if(NuminReihe == 1) SendIR(0x1240, 2, 1); //If Abfrage nur zur Sicherheit. Eigentlich unnötig. //2. Vorderes Auto sendet Signal zur ampel damit Ampel anfängt zu agieren
   //Warte nun auf Ampel Signal und gebe wenn Ampel Signal da das Signal an die hinteren weiter
@@ -398,12 +409,12 @@ void setup() {
 
   // steuerung
   pinMode(L1, OUTPUT);
-  pinMode(L2, OUTPUT);
-  pinMode(L3, OUTPUT);
+  // pinMode(L2, OUTPUT);
+  // pinMode(L3, OUTPUT);
 
   pinMode(R1, OUTPUT);
-  pinMode(R2, OUTPUT);
-  pinMode(R3, OUTPUT);
+  // pinMode(R2, OUTPUT);
+  // pinMode(R3, OUTPUT);
 
   //USS
   for (int i=0; i<4; i++){
