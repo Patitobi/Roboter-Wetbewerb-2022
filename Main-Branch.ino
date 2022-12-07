@@ -9,13 +9,13 @@
 #define ZURUECK -1
 
 // steuerung / drei relays pro seite 1 und 2 für plus und minus 3 ist für das stopen
-const int L1 = 0;
-const int L2 = 0;
-const int L3 = 0;
+const int L1 = 44;
+//const int L2 = 0;
+//const int L3 = 0;
 
-const int R1 = 0;
-const int R2 = 0;
-const int R3 = 0;
+const int R1 = 46;
+//const int R2 = 0;
+//const int R3 = 0;
 
 const int einGradeDrechen = 1; // anzahl an sekunden die wir brauchen um uns 1 grad zu drehen 
 
@@ -26,21 +26,20 @@ const int SENSOR_S2 = 7;
 const int SENSOR_S3 = 6;
 const int SENSOR_OUT =8;
 
-const int redmin = 22;
-const int redmax= 381;
-const int grumin = 22;
-const int grumax = 406;
-const int blumin = 15;
-const int blumax = 254;
+const int redmin = 28;
+const int redmax= 178;
+const int grumin = 26;
+const int grumax = 173;
+const int blumin = 18;
+const int blumax = 112;
+
+// 0 = Rot; 1 = Schwarz; 2 = Weiß; 3 = Gelbs
+int FarbeUnterMir = -1;
 
 // gemessende werte werden hier gespeichert
 int farbSensorVal[3][3];
 
-//Allgemeine Variablen
-// definirt in welche 
-int fahrRichtung = 0;
-
-int folgeFarbe[3]; // die variable die speicher welcher farbe gefolgt werden soll in rgb angabe
+int folgeFarbe = 1; // die variable die speicher welcher farbe gefolgt werden soll in rgb angabe
 //!!! wichtig hier bei ist das die angaben nicht aus dem internet sind sonder die werte die wir auf der strecke messen !!!
 
 
@@ -68,25 +67,37 @@ IRrecv irrecv(RECV_PIN); //Empfänger Pin
 decode_results results; //erstelle Object in welches dann die Daten nach jedem scan rein wandern
 
 void reifen(int seite, int mode){
+  if (seite == 0){
+    if (mode==STOP){
+      digitalWrite(L1, LOW);
+      digitalWrite(R1, LOW);
+    }
+    if(mode==VOR){
+      digitalWrite(L1, HIGH);
+      digitalWrite(R1, HIGH);
+    }
+  }
   // es werden die relays immer so gesetzt das wir in die angegebene richtung fahren
   // seite 0 bedeutet das beide seiten angesproche werden
+  /*
   if (seite == 0||mode == STOP){
-    digitalWrite(R3, LOW);
-    digitalWrite(L3, LOW);
+     digitalWrite(R3, LOW);
+     digitalWrite(L3, LOW);
 
-    digitalWrite(R2, LOW);
-    digitalWrite(L2, LOW);
+     digitalWrite(R2, LOW);
+     digitalWrite(L2, LOW);
+
   } 
   else if(seite == 0||mode == VOR){
-    digitalWrite(R3, HIGH);
-    digitalWrite(R2, LOW);
-    digitalWrite(R1, LOW);
+     digitalWrite(R3, HIGH);
+     digitalWrite(R2, LOW);
+     digitalWrite(R1, LOW);
 
-    digitalWrite(L3, HIGH);
-    digitalWrite(L2, LOW);
-    digitalWrite(L1, LOW);
+     digitalWrite(L3, HIGH);
+     digitalWrite(L2, LOW);
+     digitalWrite(L1, LOW);
   }else{
-    // für links
+     für links
     if (seite == -1){
       if (mode == STOP){
         digitalWrite(L3, LOW);
@@ -116,9 +127,8 @@ void reifen(int seite, int mode){
         digitalWrite(R1, HIGH);
       }
     }
-  }
+  }*/
 }
-
 void drehen(int richtung, int grade){
   if (richtung == RECHTS){
     reifen(LINKS, VOR);// setzt motoren so das wir uns an der stelle drehen in die angegebene richtung
@@ -149,24 +159,32 @@ int updatesensor(int sensnum){
 // zum updaten von allen 
 void updateSensors(){
   int temp;
-  for(int i=0;i<2; i++){
+  for(int i=0;i<1; i++){
     entfernung[i] = 0;
     temp = 0;
     for (int x=0; x<durschnittaus; x++){
       temp = updatesensor(i);
-      if (temp > 1200){
+      if (temp > 1200||temp<0){
         temp = updatesensor(i);
       }
+      entfernung[i]+=temp;
     }
     entfernung[i] /= durschnittaus;
+    Serial.print("entfernung");
+    Serial.println(entfernung[i]);
   }
 }
 void USScheck(){
   for (int i=0; i<1;i++){
-    if (entfernung[i]<=200){
+    if (entfernung[i]<=300){
       Serial.println("stop");
+      digitalWrite(30, LOW);
+      digitalWrite(34, LOW);
+      
       reifen(0, STOP);
     } else {
+      digitalWrite(30, HIGH);
+      digitalWrite(34, HIGH);
       reifen(0, VOR);
     }
   }
@@ -177,6 +195,10 @@ void getRed(int sensnum){
   digitalWrite(SENSOR_S3, LOW);
   frequency = pulseIn(SENSOR_OUT, LOW);
   farbSensorVal[sensnum][0] = map(frequency, redmin, redmax, 255, 0);
+  Serial.print("rot =  ");
+  Serial.print(farbSensorVal[sensnum][0]);
+  //Serial.print(frequency);
+  Serial.print("      ");
 }
 void getGruen(int sensnum){
   int frequency;
@@ -184,6 +206,10 @@ void getGruen(int sensnum){
   digitalWrite(SENSOR_S3, HIGH);
   frequency = pulseIn(SENSOR_OUT, LOW);
   farbSensorVal[sensnum][1] = map(frequency, grumin, grumax, 255, 0);
+  Serial.print("greun =  ");
+  Serial.print(farbSensorVal[sensnum][1]);
+  //Serial.print(frequency);
+  Serial.print("      ");
 }
 void getBlue(int sensnum){
   int frequency;
@@ -191,30 +217,57 @@ void getBlue(int sensnum){
   digitalWrite(SENSOR_S3, HIGH);
   frequency = pulseIn(SENSOR_OUT, LOW);
   farbSensorVal[sensnum][2] = map(frequency, blumin, blumax, 255, 0);
+  Serial.print("blau = ");
+  Serial.print(farbSensorVal[sensnum][2]);
+  //Serial.print(frequency);
+  Serial.println("      ");
+}
+void setFarbe(){
+  for (int sensnum = 0; sensnum<1; sensnum++){
+    if ((farbSensorVal[sensnum][0] <= 160 && farbSensorVal[sensnum][0]>= 100) && (farbSensorVal[sensnum][1]<=70 && farbSensorVal[sensnum][1 ]>= 10) && (farbSensorVal[sensnum][2] <= 70 && farbSensorVal[sensnum][2] >= 20)){
+      FarbeUnterMir = 0;
+    }
+    else if ((farbSensorVal[sensnum][0] <= 21) && (farbSensorVal[sensnum][1]<=25) && (farbSensorVal[sensnum][2] <= 40)){
+      FarbeUnterMir = 1;
+    }
+    else if ((farbSensorVal[sensnum][0]>= 225) && (farbSensorVal[sensnum][1] >= 225) && (farbSensorVal[sensnum][2] >= 225)){
+      FarbeUnterMir = 2;
+    }
+    else if ((farbSensorVal[sensnum][0] <= 140 && farbSensorVal[sensnum][0]>= 114) && (farbSensorVal[sensnum][1]<=112 && farbSensorVal[sensnum][1]>= 98) && (farbSensorVal[sensnum][2] <= 74 && farbSensorVal[sensnum][2] >= 49)){
+      FarbeUnterMir = 3;
+    }
+    else {
+      FarbeUnterMir = -1;
+    }
+  }
+  Serial.println(FarbeUnterMir);
 }
 void updatecolcor(){
-  for (int i=0; i<3; i++){
+  for (int i=0; i<1; i++){
     getRed(i);
     getGruen(i);
     getBlue(i);
   }
-}
-void farbcheck(){
-  //der in fahrtrichtung linke sender ist IMMER 0 mitte 1 rechts 2
-  for (int sensor=0; sensor<3; sensor++){
-    for (int rgb=0; rgb<3; rgb++)
-      if (farbSensorVal[sensor][rgb]+10!=folgeFarbe[0]||farbSensorVal[sensor][rgb]-10!=folgeFarbe[0]){ // guckt ob der wehrt dem gesuchten wert entspricht
-        // tollerranz von 10 einheiten abweichung zum gesuchten wert
-        if (sensor == 0){
-          // nach rechts korigiren
-        }
-        if (sensor == 1){
-          // erstam nix
-        }
-        if (sensor == 2){
-          // nach links korigiren
-        }
-      }
+  setFarbe();
+  switch (FarbeUnterMir)
+  {
+  case 0: // wenn rot
+    Serial.println("rot");
+    reifen(0, STOP);
+    break;
+  case 1: // wenn Schwarß
+    Serial.println("Schwarz");
+    reifen(0, VOR);
+    break;
+  case 2: // wenn Weiß
+    Serial.println("Weiß");
+    break;
+  case 3: // wenn Gelb
+    Serial.println("Gelb");
+    break;
+  default: // wenn nicht erkennbar
+    Serial.println("NULL");
+    break;
   }
 }
 void SendIR(long Code, int repeat, int dir){ //dir gibt an ob nach vorne oder nach hinten
@@ -344,9 +397,8 @@ void Startsync(){
   }
 }
 void update(){
-  GetIR();
-  //updatesensor(0);
-  //updatecolcor();
+  //updateSensors();
+  updatecolcor();
 }
 void machen(){
   USScheck();
@@ -391,8 +443,8 @@ void setup() {
   Serial.println("GO");
   Startsync();
 }
-void loop() {
+void loop(){
   update();
-  
+  delay(200);
   //machen();
 }
