@@ -254,7 +254,7 @@ void GetIR(){
   //code der nicht unterbrochen werden darf
   if (irrecv.decode(&results)){ //Wenn irgendwas auf dem recvPin Gelesen wird dann 
       Serial.println(results.value, HEX); //Print in den Arduino Log (HEX)
-      hexvalue = String(results.value, HEX); //Hier kurz eine variable machen um nicht in allen if statements die funktion durch zu führen (performance)
+      hexvalue = String(results.value); //Hier kurz eine variable machen um nicht in allen if statements die funktion durch zu führen (performance)
       if(hexvalue == 0x1101){ //Grünes zeichen von Ampel
         AmpelPing(0x1101);
       }else if(hexvalue == 0x1210){ //Ampel Anfahrt 
@@ -283,8 +283,8 @@ void StartGroup(int index){
   while(!synced){
     //Send Group request
     if(index == 1){
-      SendIR(0x1201, 3, 0); //hinter sich und
-      SendIR(0x1201, 3, 1); //vor sich senden
+      SendIR(0x1201, 1, 0); //hinter sich und
+      //SendIR(0x1201, 3, 1); //vor sich senden
     }else if(index == 2){
       SendIR(0x1202, 3, 0);
       SendIR(0x1202, 3, 1);
@@ -296,6 +296,7 @@ void StartGroup(int index){
       SendIR(0x1204, 3, 1);
     }
     //Read Group Requests
+    delay(100);
     GetIR();
     //Wass wir hier machen ist wir warten biss alle Signale von allen Autos einmal bei einem Auto angekommen sind
     //Wir Arbeiten quasi einfach eine Check Liste ab mit allen Codes.
@@ -315,43 +316,43 @@ void StartGroup(int index){
   }
 }
 void Startsync(){
+  hexvalue = String(0x0123);
   while(!synced){ //Wartet auf Fernbedienung auf zuweisung von nummer
-    GetIR();
-    if(hexvalue == 0xFF30CF){ //Platzhalter für fernbiediegungs code
+    for(int i = 0; i != 100;i++){
+      GetIR();
+    }
+    if(hexvalue == String(0xFF30CF)){ //Platzhalter für fernbiediegungs code
       NuminReihe = 1;
       Car1 = true;
-      Serial.println(hexvalue);
       StartGroup(NuminReihe);
-    }else if(hexvalue == 0xFF18E7){
+    }else if(hexvalue == String(0xFF18E7)){
       NuminReihe = 2;
       Car2 = true;
-      Serial.println(hexvalue);
       StartGroup(NuminReihe);
     }
-    else if(hexvalue == 0xFF7A85){
+    else if(hexvalue == String(0xFF7A85)){
       NuminReihe = 3;
       Car3 = true;
-      Serial.println(hexvalue);
       StartGroup(NuminReihe);
     }
-    else if(hexvalue == 0xFF10EF){
+    else if(hexvalue == String(0xFF10EF)){
       NuminReihe = 4;
       Car4 = true;
-      Serial.println(hexvalue);
       StartGroup(NuminReihe);
     }
-    Serial.println("Waiting for Remote");
+    //Serial.println("Waiting for Remote");
   }
 }
 void update(){
   GetIR();
-  updatesensor(0);
-  updatecolcor();
+  //updatesensor(0);
+  //updatecolcor();
 }
 void machen(){
   USScheck();
 }
 void setup() {
+  hexvalue = "0";
   //farbsensor
   pinMode(SENSOR_S0, OUTPUT);
   pinMode(SENSOR_S1, OUTPUT);
@@ -376,12 +377,11 @@ void setup() {
     pinMode(sensPins[i][1], OUTPUT); 
     pinMode(sensPins[i][0], INPUT);
   }
-  pinMode(34, OUTPUT);
+  pinMode(34, OUTPUT);  
   pinMode(30, OUTPUT);
   //IR
   //Recieve IR
-  irrecv.enableIRIn(); //Fang an zu Lesen
-  irrecv.blink13(true); //Default Pin auf dem Board welcher blinkt wenn Pin was ließt
+  irrecv.begin(7, ENABLE_LED_FEEDBACK); //Fang an zu Lesen
   //Send IR
   pinMode(LED_BUILTIN, OUTPUT);
   IrSender.begin(3);
@@ -394,5 +394,5 @@ void setup() {
 void loop() {
   update();
   
-  machen();
+  //machen();
 }
