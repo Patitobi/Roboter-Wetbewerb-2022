@@ -10,12 +10,8 @@
 
 // steuerung / drei relays pro seite 1 und 2 für plus und minus 3 ist für das stopen
 const int L1 = 44;
-//const int L2 = 0;
-//const int L3 = 0;
 
 const int R1 = 46;
-//const int R2 = 0;
-//const int R3 = 0;
 
 const int einGradeDrechen = 1; // anzahl an sekunden die wir brauchen um uns 1 grad zu drehen 
 
@@ -24,20 +20,21 @@ const int SENSOR_S0 = 5;
 const int SENSOR_S1 = 4;
 const int SENSOR_S2 = 7;
 const int SENSOR_S3 = 6;
-const int SENSOR_OUT =8;
+const int SENSOR_OUT[3] = {36, 51, 38};
 
-const int redmin = 28;
-const int redmax= 178;
-const int grumin = 26;
-const int grumax = 173;
-const int blumin = 18;
-const int blumax = 112;
+const int redmin = 18;
+const int grumin = 18;
+const int blumin = 6;
+const int redmax = 292;
+const int grumax = 307;
+const int blumax = 202;
 
 // 0 = Rot; 1 = Schwarz; 2 = Weiß; 3 = Gelbs
-int FarbeUnterMir = -1;
+int wirklicheFarbe;
 
 // gemessende werte werden hier gespeichert
 int farbSensorVal[3][3];
+int farbfre[3][3];
 
 int folgeFarbe = 1; // die variable die speicher welcher farbe gefolgt werden soll in rgb angabe
 //!!! wichtig hier bei ist das die angaben nicht aus dem internet sind sonder die werte die wir auf der strecke messen !!!
@@ -66,78 +63,23 @@ bool Car4;
 IRrecv irrecv(RECV_PIN); //Empfänger Pin
 decode_results results; //erstelle Object in welches dann die Daten nach jedem scan rein wandern
 
-void reifen(int seite, int mode){
-  if (seite == 0){
-    if (mode==STOP){
-      digitalWrite(L1, LOW);
-      digitalWrite(R1, LOW);
-    }
-    if(mode==VOR){
-      digitalWrite(L1, HIGH);
-      digitalWrite(R1, HIGH);
-    }
-  }
-  // es werden die relays immer so gesetzt das wir in die angegebene richtung fahren
-  // seite 0 bedeutet das beide seiten angesproche werden
-  /*
-  if (seite == 0||mode == STOP){
-     digitalWrite(R3, LOW);
-     digitalWrite(L3, LOW);
-
-     digitalWrite(R2, LOW);
-     digitalWrite(L2, LOW);
-
-  } 
-  else if(seite == 0||mode == VOR){
-     digitalWrite(R3, HIGH);
-     digitalWrite(R2, LOW);
-     digitalWrite(R1, LOW);
-
-     digitalWrite(L3, HIGH);
-     digitalWrite(L2, LOW);
-     digitalWrite(L1, LOW);
-  }else{
-     für links
-    if (seite == -1){
-      if (mode == STOP){
-        digitalWrite(L3, LOW);
-        digitalWrite(L2, LOW);
-      } else if(mode == VOR){
-        digitalWrite(L3, HIGH);
-        digitalWrite(L2, LOW);
-        digitalWrite(L1, LOW);
-      } else if(mode == ZURUECK){
-        digitalWrite(L3, LOW);
-        digitalWrite(L2, HIGH);
-        digitalWrite(L1, HIGH);
+void reifen(int seite, int mode)
+{
+  if (canDrive)
+  {
+    if (seite == 0)
+    {
+      if (mode == VOR)
+      {
+        pinMode(L1, LOW);
+        pinMode(R1, LOW);
+      }
+      else if (mode == STOP)
+      {
+        pinMode(L1, HIGH);
+        pinMode(R1, HIGH);
       }
     }
-    // für rechts
-    if (seite == 1){
-      if (mode == STOP){
-        digitalWrite(R3, LOW);
-        digitalWrite(R2, LOW);
-      } else if(mode == VOR){
-        digitalWrite(R3, HIGH);
-        digitalWrite(R2, LOW);
-        digitalWrite(R1, LOW);
-      } else if(mode == ZURUECK){
-        digitalWrite(R3, LOW);
-        digitalWrite(R2, HIGH);
-        digitalWrite(R1, HIGH);
-      }
-    }
-  }*/
-}
-void drehen(int richtung, int grade){
-  if (richtung == RECHTS){
-    reifen(LINKS, VOR);// setzt motoren so das wir uns an der stelle drehen in die angegebene richtung
-    reifen(RECHTS, ZURUECK);
-    delay(einGradeDrechen * grade);// delayt füe die zeit die wir brachen um uns für die bestimmte grade zahl zu drehen
-  } else if (richtung == LINKS){
-    reifen(LINKS, ZURUECK);// setzt motoren so das wir uns an der stelle drehen in die angegebene richtung
-    reifen(RECHTS, VOR);
-    delay(einGradeDrechen * grade); // delayt füe die zeit die wir brachen um uns für die bestimmte grade zahl zu drehen
   }
 }
 
@@ -189,82 +131,102 @@ void USScheck(){
     }
   }
 }
-void getRed(int sensnum){
+void getRed(int sensnum)
+{
   int frequency;
   digitalWrite(SENSOR_S2, LOW);
   digitalWrite(SENSOR_S3, LOW);
-  frequency = pulseIn(SENSOR_OUT, LOW);
+  frequency = pulseIn(SENSOR_OUT[sensnum], LOW);
+  farbfre[sensnum][0] = frequency;
   farbSensorVal[sensnum][0] = map(frequency, redmin, redmax, 255, 0);
-  Serial.print("rot =  ");
-  Serial.print(farbSensorVal[sensnum][0]);
-  //Serial.print(frequency);
-  Serial.print("      ");
+  // Serial.print("rot =  ");
+  // Serial.print(farbSensorVal[sensnum][0]);
+  // // Serial.print(frequency);
+  // Serial.print("      ");
 }
-void getGruen(int sensnum){
+void getGruen(int sensnum)
+{
   int frequency;
   digitalWrite(SENSOR_S2, HIGH);
   digitalWrite(SENSOR_S3, HIGH);
-  frequency = pulseIn(SENSOR_OUT, LOW);
+  frequency = pulseIn(SENSOR_OUT[sensnum], LOW);
+  farbfre[sensnum][1] = frequency;
   farbSensorVal[sensnum][1] = map(frequency, grumin, grumax, 255, 0);
-  Serial.print("greun =  ");
-  Serial.print(farbSensorVal[sensnum][1]);
-  //Serial.print(frequency);
-  Serial.print("      ");
+  // Serial.print("greun =  ");
+  // Serial.print(farbSensorVal[sensnum][1]);
+  // // Serial.print(frequency);
+  // Serial.print("      ");
 }
-void getBlue(int sensnum){
+void getBlue(int sensnum)
+{
   int frequency;
   digitalWrite(SENSOR_S2, LOW);
   digitalWrite(SENSOR_S3, HIGH);
-  frequency = pulseIn(SENSOR_OUT, LOW);
+  frequency = pulseIn(SENSOR_OUT[sensnum], LOW);
+  farbfre[sensnum][2] = frequency;
   farbSensorVal[sensnum][2] = map(frequency, blumin, blumax, 255, 0);
-  Serial.print("blau = ");
-  Serial.print(farbSensorVal[sensnum][2]);
-  //Serial.print(frequency);
-  Serial.println("      ");
+  // Serial.print("blau = ");
+  // Serial.print(farbSensorVal[sensnum][2]);
+  // //  Serial.print(frequency);
+  //  Serial.println("      ");
 }
 void setFarbe(){
-  for (int sensnum = 0; sensnum<1; sensnum++){
-    if ((farbSensorVal[sensnum][0] <= 160 && farbSensorVal[sensnum][0]>= 100) && (farbSensorVal[sensnum][1]<=70 && farbSensorVal[sensnum][1 ]>= 10) && (farbSensorVal[sensnum][2] <= 70 && farbSensorVal[sensnum][2] >= 20)){
-      FarbeUnterMir = 0;
+  int FarbeUnterMir[4] {0,0,0,0};
+  for(int sensors=0; sensors<3; sensors++){
+    if ((farbSensorVal[sensors][0] >180 && farbSensorVal[sensors][0] <230)&& (farbSensorVal[sensors][1] < 170 && farbSensorVal[sensors][1] >130) && (farbSensorVal[sensors][2] <160 && farbSensorVal[sensors][2] > 130)){
+      FarbeUnterMir[0] += 1;
     }
-    else if ((farbSensorVal[sensnum][0] <= 21) && (farbSensorVal[sensnum][1]<=25) && (farbSensorVal[sensnum][2] <= 40)){
-      FarbeUnterMir = 1;
+    else if (farbSensorVal[sensors][0] < 150 && farbSensorVal[sensors][1] <150 && farbSensorVal[sensors][2] <150){
+      FarbeUnterMir[1] += 1;
     }
-    else if ((farbSensorVal[sensnum][0]>= 225) && (farbSensorVal[sensnum][1] >= 225) && (farbSensorVal[sensnum][2] >= 225)){
-      FarbeUnterMir = 2;
-    }
-    else if ((farbSensorVal[sensnum][0] <= 140 && farbSensorVal[sensnum][0]>= 114) && (farbSensorVal[sensnum][1]<=112 && farbSensorVal[sensnum][1]>= 98) && (farbSensorVal[sensnum][2] <= 74 && farbSensorVal[sensnum][2] >= 49)){
-      FarbeUnterMir = 3;
+    else if (farbSensorVal[sensors][0] > 200 && farbSensorVal[sensors][1] > 200 && farbSensorVal[sensors][2] >200){
+      FarbeUnterMir[2] += 1;
     }
     else {
-      FarbeUnterMir = -1;
+      FarbeUnterMir[3] += 1;
     }
   }
-  Serial.println(FarbeUnterMir);
+  int temp = 0;
+// Serial.println(FarbeUnterMir[0]);
+// Serial.println(FarbeUnterMir[1]);
+// Serial.println(FarbeUnterMir[2]);
+// Serial.println(FarbeUnterMir[3]);
+
+  for (int x =0; x<4; x++){
+    if(temp<FarbeUnterMir[x]){
+      temp = FarbeUnterMir[x];
+      wirklicheFarbe = x;
+    }
+  }
 }
-void updatecolcor(){
-  for (int i=0; i<1; i++){
+void updatecolcor()
+{
+  for (int i = 0; i < 3; i++)
+  {
     getRed(i);
     getGruen(i);
     getBlue(i);
   }
   setFarbe();
-  switch (FarbeUnterMir)
+  switch (wirklicheFarbe)
   {
   case 0: // wenn rot
     Serial.println("rot");
-    reifen(0, STOP);
+    reifen(0, STOP);  
+    canDrive = false;
     break;
-  case 1: // wenn Schwarß
+  case 1: // wenn Schwarz
     Serial.println("Schwarz");
-    reifen(0, VOR);
+    //reifen(0, STOP);
     break;
   case 2: // wenn Weiß
     Serial.println("Weiß");
+    //reifen(0, VOR);
     break;
-  case 3: // wenn Gelb
-    Serial.println("Gelb");
-    break;
+  // case 3: // wenn Gelb
+  //   Serial.println("Gelb");
+  //   reifen(0, VOR);
+  //   break;
   default: // wenn nicht erkennbar
     Serial.println("NULL");
     break;
@@ -403,6 +365,80 @@ void update(){
 void machen(){
   USScheck();
 }
+void kal()
+{
+  int val[2][3] = {{1000, 1000, 1000}, {0, 0, 0}};
+  int fre[2][3] = {{1000, 1000, 1000}, {0, 0, 0}};
+  for (int x = 0; x < 5000; x++)
+  {
+
+    for (int i = 0; i < 3; i++)
+    {
+      getRed(i);
+      getGruen(i);
+      getBlue(i);
+
+      if (farbSensorVal[i][0] < val[0][0])
+        val[0][0] = farbSensorVal[i][0];
+      if (farbSensorVal[i][1] < val[0][1])
+        val[0][1] = farbSensorVal[i][1];
+      if (farbSensorVal[i][2] < val[0][2])
+        val[0][2] = farbSensorVal[i][2];
+
+      if (farbSensorVal[i][0] > val[1][0])
+        val[1][0] = farbSensorVal[i][0];
+      if (farbSensorVal[i][1] > val[1][1])
+        val[1][1] = farbSensorVal[i][1];
+      if (farbSensorVal[i][2] > val[1][2])
+        val[1][2] = farbSensorVal[i][2];
+
+      if (farbfre[i][0] < fre[0][0])
+        fre[0][0] = farbfre[i][0];
+      if (farbfre[i][1] < fre[0][1])
+        fre[0][1] = farbfre[i][1];
+      if (farbfre[i][2] < fre[0][2])
+        fre[0][2] = farbfre[i][2];
+
+      if (farbfre[i][0] > fre[1][0])
+        fre[1][0] = farbfre[i][0];
+      if (farbfre[i][1] > fre[1][1])
+        fre[1][1] = farbfre[i][1];
+      if (farbfre[i][2] > fre[1][2])
+        fre[1][2] = farbfre[i][2];
+    }
+  }
+  Serial.println("--------------------------");
+
+  Serial.print("const int redmin = ");
+  Serial.println(val[0][0]);
+  Serial.print("const int grumin = ");
+  Serial.println(val[0][1]);
+  Serial.print("const int blumin = ");
+  Serial.println(val[0][2]);
+  Serial.print("const int redmax = ");
+  Serial.println(val[1][0]);
+  Serial.print("const int grumax = ");
+  Serial.println(val[1][1]);
+  Serial.print("const int blumax = ");
+  Serial.println(val[1][2]);
+
+  Serial.println("--------------------------");
+
+  Serial.print("const int redmin = ");
+  Serial.println(fre[0][0]);
+  Serial.print("const int grumin = ");
+  Serial.println(fre[0][1]);
+  Serial.print("const int blumin = ");
+  Serial.println(fre[0][2]);
+  Serial.print("const int redmax = ");
+  Serial.println(fre[1][0]);
+  Serial.print("const int grumax = ");
+  Serial.println(fre[1][1]);
+  Serial.print("const int blumax = ");
+  Serial.println(fre[1][2]);
+
+  Serial.println("--------------------------");
+}
 void setup() {
   hexvalue = "0";
   //farbsensor
@@ -410,19 +446,17 @@ void setup() {
   pinMode(SENSOR_S1, OUTPUT);
   pinMode(SENSOR_S2, OUTPUT);
   pinMode(SENSOR_S3, OUTPUT);
-  pinMode(SENSOR_OUT, INPUT);
+  pinMode(SENSOR_OUT[0], INPUT);
+  pinMode(SENSOR_OUT[1], INPUT);
+  pinMode(SENSOR_OUT[2], INPUT);
 
   digitalWrite(SENSOR_S0, HIGH);
   digitalWrite(SENSOR_S1, LOW);
 
   // steuerung
   pinMode(L1, OUTPUT);
-  pinMode(L2, OUTPUT);
-  pinMode(L3, OUTPUT);
 
   pinMode(R1, OUTPUT);
-  pinMode(R2, OUTPUT);
-  pinMode(R3, OUTPUT);
 
   //USS
   for (int i=0; i<4; i++){
