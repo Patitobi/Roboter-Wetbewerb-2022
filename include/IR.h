@@ -23,6 +23,3 @@ void GetIR();
 void AmpelPing(long Code);
 void AmpelAnfahrt();
 void RedLineReached();
-void WaitforStart();
-void GetmyIndex();
-void IR_pinSetup();

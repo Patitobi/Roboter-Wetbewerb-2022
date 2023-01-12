@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include "USS.h"
-#include "sync.h"
-#include "sync.h"
+#include "IR.h"
 #include "farbSens.h"
 #include "reifen.h"
 
@@ -20,6 +19,10 @@ void setup()
 {
 	reifen_pinSetup();
 	farbSens_pinSetup();
+	UUS_pinSetup();
+	
+	// als lestztes wegen den sync
+	IR_pinSetup();
 }
 
 void loop()

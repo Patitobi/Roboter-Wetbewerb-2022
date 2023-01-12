@@ -10,7 +10,6 @@ void UUS_pinSetup()
     pinMode(34, OUTPUT);
     pinMode(30, OUTPUT);
 }
-
 // für einzelne
 int updatesensor(int sensnum)
 {
