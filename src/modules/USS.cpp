@@ -18,7 +18,7 @@ int updatesensor(int sensnum){
 // zum updaten von allen 
 void updateSensors(){
   int temp;
-  for(int i=0;i<1; i++){
+  for(int i=0;i<4; i++){
     entfernung[i] = 0;
     temp = 0;
     for (int x=0; x<durschnittaus; x++){
