@@ -167,8 +167,8 @@ void updateSensors(){
       entfernung[i]+=temp;
     }
     entfernung[i] /= durschnittaus;
-    Serial.print("entfernung");
-    Serial.println(entfernung[i]);
+    //Serial.print("entfernung");
+    //Serial.println(entfernung[i]);
   }
 }
 void USScheck(){
@@ -341,17 +341,21 @@ void WaitforStart(){
 void GetmyIndex(){
   while(!synced){
     GetIR();
-    if(hexvalue == String(/*Fernbedienung Index 1 Code*/)){
+    if(hexvalue == String(0xFF30CF)){
       NuminReihe = 1;
+      Serial.println("Launching as 1st Car");
       WaitforStart(); 
-    }else if(hexvalue == String(/*Fernbedienung Index 2 Code*/)){
+    }else if(hexvalue == String(0xFF18E7)){
       NuminReihe = 2;
+      Serial.println("Launching as 2nd Car");
       WaitforStart(); 
-    }else if(hexvalue == String(/*Fernbedienung Index 3 Code*/)){
+    }else if(hexvalue == String(0xFF7A85)){
       NuminReihe = 3;
+      Serial.println("Launching as 3rd Car");
       WaitforStart(); 
-    }else if(hexvalue == String(/*Fernbedienung Index 4 Code*/)){
+    }else if(hexvalue == String(0xFF10EF)){
       NuminReihe = 4;
+      Serial.println("Launching as 4th Car");
       WaitforStart(); 
     }
   }
@@ -360,8 +364,14 @@ void update(){
   updateSensors();
   //updatecolcor();
 }
+void USSDebug(){
+  Serial.println("Enfernung 1: " + String(entfernung[0]));
+  Serial.println("Enfernung 2: " + String(entfernung[1]));
+  Serial.println("Enfernung 3: " + String(entfernung[2]));
+  Serial.println("Enfernung 4: " + String(entfernung[3]));
+}
 void machen(){
-  //USScheck();
+  USScheck();
 }
 void setup() {
   hexvalue = "0";
@@ -405,6 +415,7 @@ void setup() {
   GetmyIndex();
 }
 void loop(){
-  //update();
+  USSDebug();
+  update();
   //machen();
 }
