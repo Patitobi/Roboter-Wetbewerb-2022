@@ -22,3 +22,6 @@ int farbSensorVal[3][3];
 
 int folgeFarbe = 1; // die variable die speicher welcher farbe gefolgt werden soll in rgb angabe
 //!!! wichtig hier bei ist das die angaben nicht aus dem internet sind sonder die werte die wir auf der strecke messen !!!
+
+//functionen in farbSens.cpp
+void updatecolcor();
