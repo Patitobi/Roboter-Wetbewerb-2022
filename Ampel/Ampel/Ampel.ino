@@ -34,6 +34,7 @@ void setup() {
     Serial.begin(115200);
     irrecv.begin(7, ENABLE_LED_FEEDBACK);
     IrSender.begin(3);
+    Serial.println("GO");
 }
 
 void update(){

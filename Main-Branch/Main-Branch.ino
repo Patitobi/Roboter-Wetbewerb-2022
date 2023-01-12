@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <IRremote.hpp>
+//#include <sync.cpp>
 
 #define RECHTS  1
 #define MITTE   0
@@ -9,22 +10,22 @@
 #define ZURUECK -1
 
 // steuerung / drei relays pro seite 1 und 2 für plus und minus 3 ist für das stopen
-const int L1 = 44;
+const int L1 = 9;
 //const int L2 = 0;
 //const int L3 = 0;
 
-const int R1 = 46;
+const int R1 = 10;
 //const int R2 = 0;
 //const int R3 = 0;
 
 const int einGradeDrechen = 1; // anzahl an sekunden die wir brauchen um uns 1 grad zu drehen 
 
 //farbsensor
-const int SENSOR_S0 = 5;
-const int SENSOR_S1 = 4;
-const int SENSOR_S2 = 7;
-const int SENSOR_S3 = 6;
-const int SENSOR_OUT =8;
+const int SENSOR_S0 = 22;
+const int SENSOR_S1 = 24;
+const int SENSOR_S2 = 26;
+const int SENSOR_S3 = 28;
+const int SENSOR_OUT = 8;
 
 const int redmin = 28;
 const int redmax= 178;
@@ -44,7 +45,7 @@ int folgeFarbe = 1; // die variable die speicher welcher farbe gefolgt werden so
 
 
 //USS
-const int sensPins[4][2] = {{2,3}, {0, 0}, {0, 0}, {0, 0}};
+const int sensPins[4][2] = {{45,40}, {46, 40}, {47, 40}, {48, 40}}; //1 Slot ist Output 2 Slot ist Input
 int entfernung[4] = {0,0,0,0};
 int durschnittaus = 10;
 
@@ -58,10 +59,6 @@ String NextMoveInfrontOfMe; //Hat das Vorhaben von dem Auto hinter sich in sich
 String hexvalue;
 const int RECV_PIN = 7;
 const long TurnONCode = 0x1234; //Platzhalter für Fernbedienungs code um anzuschalten
-bool Car1;
-bool Car2;
-bool Car3;
-bool Car4;
 
 IRrecv irrecv(RECV_PIN); //Empfänger Pin
 decode_results results; //erstelle Object in welches dann die Daten nach jedem scan rein wandern
@@ -296,7 +293,7 @@ void AmpelPing(long Code){
   }
 }
 void AmpelAnfahrt(){//Wird aufgerufen um dem vordermann bis auf 5cm aufzufahren und dann zu warten bis Grünes Licht signal vom vordermann kommt.
-  //Fahr so  lange an bis was 7 cm vor deiner nase ist dann bleib stehen und warte einfach nur bis das "Ampel ist grün" Signal kommt.
+  //Fahr so lange an bis was 7 cm vor deiner nase ist dann bleib stehen und warte einfach nur bis das "Ampel ist grün" Signal kommt.
   reifen(0, VOR);
   while(entfernung[0] > 70){
     updateSensors();
@@ -323,85 +320,48 @@ void RedLineReached(){ //Muss von Farbsensor gecallt werden und kann auch nur vo
   //Dann Ping die Ampel an das die anfangen soll ihr Programm abzurfen -> (Ampel wartet 8 Sekunden und gibt dann grünes Signal via IR)
   SendIR(0x1210, 2, 0); //Stehen bleiben 2x nach hinten
   if(NuminReihe == 1) SendIR(0x1240, 2, 1); //If Abfrage nur zur Sicherheit. Eigentlich unnötig. //2. Vorderes Auto sendet Signal zur ampel damit Ampel anfängt zu agieren
-  //Warte nun auf Ampel Signal und gebe wenn Ampel Signal da das Signal an die hinteren weiter
-  while(hexvalue != 0x1101){
+  //Warte nun auf Ampel Signal und gebe wenn  Ampel Signal da das Signal an die hinteren weiter
+  while(hexvalue != 0x1101){ //String() Fehlt kb gerade
     GetIR();
   }
-  if(hexvalue == 0x1101){ //if zur sicherheit falls interrupt was durcheinander bringt
+  if(hexvalue == String(0x1101)){ //if zur sicherheit falls interrupt was durcheinander bringt
     //send nach hinten weiter damit jeder los fährt
     SendIR(0x1101, 3, 0);
   }
 }
-void StartGroup(int index){
+void WaitforStart(){
   while(!synced){
-    //Send Group request
-    if(index == 1){
-      SendIR(0x1201, 1, 0); //hinter sich und
-      //SendIR(0x1201, 3, 1); //vor sich senden
-    }else if(index == 2){
-      SendIR(0x1202, 3, 0);
-      SendIR(0x1202, 3, 1);
-    }else if(index == 3){
-      SendIR(0x1203, 3, 0);
-      SendIR(0x1203, 3, 1);
-    }else if(index == 4){
-      SendIR(0x1204, 3, 0);
-      SendIR(0x1204, 3, 1);
-    }
-    //Read Group Requests
-    delay(100);
+    //Warte Aufs Go von der Fernbedienung und wenn Signal 0x1211 kommt Fahre los
     GetIR();
-    //Wass wir hier machen ist wir warten biss alle Signale von allen Autos einmal bei einem Auto angekommen sind
-    //Wir Arbeiten quasi einfach eine Check Liste ab mit allen Codes.
-    if(hexvalue == 0x1201 || hexvalue == 0x1202 || hexvalue == 0x1203 || hexvalue == 0x1204){
-      //Send das gelesene Signal nach vorne und hinten Weiter
-      SendIR(irrecv.decode(&results), 1, 1); //1x nach vorne
-      SendIR(irrecv.decode(&results), 1, 0); //1x nach hinten
-      //Check das bekommene Signal ab
-      if(hexvalue == 0x1201) Car1 = true;
-      else if(0x1202) Car2 = true;
-      else if(0x1203) Car3 = true;
-      else if(0x1204) Car4 = true;
+    if(hexvalue == String(0xFF30CF)){
+      synced = true;
     }
-    if(Car1 && Car2 && Car3 && Car4) synced = true;
-    Serial.println("Waiting for Other Cars to pair as ");
-    Serial.print(NuminReihe);
   }
 }
-void Startsync(){
-  hexvalue = String(0x0123);
-  while(!synced){ //Wartet auf Fernbedienung auf zuweisung von nummer
-    for(int i = 0; i != 100;i++){
-      GetIR();
-    }
-    if(hexvalue == String(0xFF30CF)){ //Platzhalter für fernbiediegungs code
+void GetmyIndex(){
+  while(!synced){
+    GetIR();
+    if(hexvalue == String(/*Fernbedienung Index 1 Code*/)){
       NuminReihe = 1;
-      Car1 = true;
-      StartGroup(NuminReihe);
-    }else if(hexvalue == String(0xFF18E7)){
+      WaitforStart(); 
+    }else if(hexvalue == String(/*Fernbedienung Index 2 Code*/)){
       NuminReihe = 2;
-      Car2 = true;
-      StartGroup(NuminReihe);
-    }
-    else if(hexvalue == String(0xFF7A85)){
+      WaitforStart(); 
+    }else if(hexvalue == String(/*Fernbedienung Index 3 Code*/)){
       NuminReihe = 3;
-      Car3 = true;
-      StartGroup(NuminReihe);
-    }
-    else if(hexvalue == String(0xFF10EF)){
+      WaitforStart(); 
+    }else if(hexvalue == String(/*Fernbedienung Index 4 Code*/)){
       NuminReihe = 4;
-      Car4 = true;
-      StartGroup(NuminReihe);
+      WaitforStart(); 
     }
-    //Serial.println("Waiting for Remote");
   }
 }
 void update(){
-  //updateSensors();
-  updatecolcor();
+  updateSensors();
+  //updatecolcor();
 }
 void machen(){
-  USScheck();
+  //USScheck();
 }
 void setup() {
   hexvalue = "0";
@@ -417,12 +377,12 @@ void setup() {
 
   // steuerung
   pinMode(L1, OUTPUT);
-  pinMode(L2, OUTPUT);
-  pinMode(L3, OUTPUT);
+  //pinMode(L2, OUTPUT);
+  //pinMode(L3, OUTPUT);
 
   pinMode(R1, OUTPUT);
-  pinMode(R2, OUTPUT);
-  pinMode(R3, OUTPUT);
+  //pinMode(R2, OUTPUT);
+  //pinMode(R3, OUTPUT);
 
   //USS
   for (int i=0; i<4; i++){
@@ -442,11 +402,9 @@ void setup() {
   //Start sync with other cars
   reifen(0, STOP);
   Serial.println("GO");
-  Startsync();
+  GetmyIndex();
 }
 void loop(){
-  reifen(0, VOR);
   //update();
-  //delay(200);
   //machen();
 }
