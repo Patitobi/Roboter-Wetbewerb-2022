@@ -1,38 +1,9 @@
+#include <Arduino.h>
 #include "USS.h"
 #include "sync.h"
-#include <Arduino.h>
 #include "sync.h"
-
-const int einGradeDrechen = 1; // anzahl an sekunden die wir brauchen um uns 1 grad zu drehen 
-
-//farbsensor
-const int SENSOR_S0 = 22;
-const int SENSOR_S1 = 24;
-const int SENSOR_S2 = 26;
-const int SENSOR_S3 = 28;
-const int SENSOR_OUT = 8;
-
-const int redmin = 28;
-const int redmax= 178;
-const int grumin = 26;
-const int grumax = 173;
-const int blumin = 18;
-const int blumax = 112;
-
-// 0 = Rot; 1 = Schwarz; 2 = Weiß; 3 = Gelbs
-int FarbeUnterMir = -1;
-
-// gemessende werte werden hier gespeichert
-int farbSensorVal[3][3];
-
-int folgeFarbe = 1; // die variable die speicher welcher farbe gefolgt werden soll in rgb angabe
-//!!! wichtig hier bei ist das die angaben nicht aus dem internet sind sonder die werte die wir auf der strecke messen !!!
-
-
-//USS
-const int sensPins[4][2] = {{45,40}, {46, 40}, {47, 40}, {48, 40}}; //1 Slot ist Output 2 Slot ist Input
-int entfernung[4] = {0,0,0,0};
-int durschnittaus = 10;
+#include "farbSens.h"
+#include "reifen.h"
 
 //Allgemeine Variablen
 int NuminReihe;
@@ -40,47 +11,6 @@ bool synced;
 String NextMoveBehindMe; //Hat das Vorhaben von dem Auto vor sich in sich
 String NextMoveInfrontOfMe; //Hat das Vorhaben von dem Auto hinter sich in sich
 
-//IR
-String hexvalue;
-const int RECV_PIN = 7;
-const long TurnONCode = 0x1234; //Platzhalter für Fernbedienungs code um anzuschalten
-
-IRrecv irrecv(RECV_PIN); //Empfänger Pin
-decode_results results; //erstelle Object in welches dann die Daten nach jedem scan rein wandern
-
-// für einzelne 
-int updatesensor(int sensnum){
-  long duration;
-  // Clears the trigPin condition
-  digitalWrite(sensPins[sensnum][1], LOW);
-  delayMicroseconds(2);
-  // Sets the trigPin HIGH (ACTIVE) for 10 microseconds
-  digitalWrite(sensPins[sensnum][1], HIGH);
-  delayMicroseconds(10);
-  digitalWrite(sensPins[sensnum][1], LOW);
-  // Reads the echoPin, returns the sound wave travel time in microseconds
-  duration = pulseIn(sensPins[sensnum][0], HIGH);
-  // Calculating the distance
-  return duration * 0.34 / 2; // Speed of sound wave divided by 2 (go and back)
-}
-// zum updaten von allen 
-void updateSensors(){
-  int temp;
-  for(int i=0;i<1; i++){
-    entfernung[i] = 0;
-    temp = 0;
-    for (int x=0; x<durschnittaus; x++){
-      temp = updatesensor(i);
-      if (temp > 1200||temp<0){
-        temp = updatesensor(i);
-      }
-      entfernung[i]+=temp;
-    }
-    entfernung[i] /= durschnittaus;
-    Serial.print("entfernung");
-    Serial.println(entfernung[i]);
-  }
-}
 void USScheck(){
   for (int i=0; i<1;i++){
     if (entfernung[i]<=300){
@@ -93,100 +23,6 @@ void USScheck(){
       digitalWrite(30, HIGH);
       digitalWrite(34, HIGH);
       reifen(0, VOR);
-    }
-  }
-}
-void getRed(int sensnum){
-  int frequency;
-  digitalWrite(SENSOR_S2, LOW);
-  digitalWrite(SENSOR_S3, LOW);
-  frequency = pulseIn(SENSOR_OUT, LOW);
-  farbSensorVal[sensnum][0] = map(frequency, redmin, redmax, 255, 0);
-  Serial.print("rot =  ");
-  Serial.print(farbSensorVal[sensnum][0]);
-  //Serial.print(frequency);
-  Serial.print("      ");
-}
-void getGruen(int sensnum){
-  int frequency;
-  digitalWrite(SENSOR_S2, HIGH);
-  digitalWrite(SENSOR_S3, HIGH);
-  frequency = pulseIn(SENSOR_OUT, LOW);
-  farbSensorVal[sensnum][1] = map(frequency, grumin, grumax, 255, 0);
-  Serial.print("greun =  ");
-  Serial.print(farbSensorVal[sensnum][1]);
-  //Serial.print(frequency);
-  Serial.print("      ");
-}
-void getBlue(int sensnum){
-  int frequency;
-  digitalWrite(SENSOR_S2, LOW);
-  digitalWrite(SENSOR_S3, HIGH);
-  frequency = pulseIn(SENSOR_OUT, LOW);
-  farbSensorVal[sensnum][2] = map(frequency, blumin, blumax, 255, 0);
-  Serial.print("blau = ");
-  Serial.print(farbSensorVal[sensnum][2]);
-  //Serial.print(frequency);
-  Serial.println("      ");
-}
-void setFarbe(){
-  for (int sensnum = 0; sensnum<1; sensnum++){
-    if ((farbSensorVal[sensnum][0] <= 160 && farbSensorVal[sensnum][0]>= 100) && (farbSensorVal[sensnum][1]<=70 && farbSensorVal[sensnum][1 ]>= 10) && (farbSensorVal[sensnum][2] <= 70 && farbSensorVal[sensnum][2] >= 20)){
-      FarbeUnterMir = 0;
-    }
-    else if ((farbSensorVal[sensnum][0] <= 21) && (farbSensorVal[sensnum][1]<=25) && (farbSensorVal[sensnum][2] <= 40)){
-      FarbeUnterMir = 1;
-    }
-    else if ((farbSensorVal[sensnum][0]>= 225) && (farbSensorVal[sensnum][1] >= 225) && (farbSensorVal[sensnum][2] >= 225)){
-      FarbeUnterMir = 2;
-    }
-    else if ((farbSensorVal[sensnum][0] <= 140 && farbSensorVal[sensnum][0]>= 114) && (farbSensorVal[sensnum][1]<=112 && farbSensorVal[sensnum][1]>= 98) && (farbSensorVal[sensnum][2] <= 74 && farbSensorVal[sensnum][2] >= 49)){
-      FarbeUnterMir = 3;
-    }
-    else {
-      FarbeUnterMir = -1;
-    }
-  }
-  Serial.println(FarbeUnterMir);
-}
-void updatecolcor(){
-  for (int i=0; i<1; i++){
-    getRed(i);
-    getGruen(i);
-    getBlue(i);
-  }
-  setFarbe();
-  switch (FarbeUnterMir)
-  {
-  case 0: // wenn rot
-    Serial.println("rot");
-    reifen(0, STOP);
-    break;
-  case 1: // wenn Schwarß
-    Serial.println("Schwarz");
-    reifen(0, VOR);
-    break;
-  case 2: // wenn Weiß
-    Serial.println("Weiß");
-    break;
-  case 3: // wenn Gelb
-    Serial.println("Gelb");
-    break;
-  default: // wenn nicht erkennbar
-    Serial.println("NULL");
-    break;
-  }
-}
-void SendIR(long Code, int repeat, int dir){ //dir gibt an ob nach vorne oder nach hinten
-  if(dir == 1){ //Send to front
-    for(int i = 0; i != repeat; i++){
-      IrSender.sendSony(Code, 20);
-      delay(1000); //Muss min 5 millisek sonst erkennt der Empfänger das als ein einziges
-    }
-  }else if(dir == 0){ //Send to back
-    for(int i = 0; i != repeat; i++){
-      IrSender.sendSony(Code, 20);
-      delay(1000); //Muss min 5 millisek sonst erkennt der Empfänger das als ein einziges
     }
   }
 }
@@ -209,21 +45,6 @@ void AmpelAnfahrt(){//Wird aufgerufen um dem vordermann bis auf 5cm aufzufahren 
     updateSensors();
   } //Warte bis auto vorne 7 cm nah ist
   reifen(0, STOP);
-}
-void GetIR(){
-  //code der nicht unterbrochen werden darf
-  if (irrecv.decode(&results)){ //Wenn irgendwas auf dem recvPin Gelesen wird dann 
-      Serial.println(results.value, HEX); //Print in den Arduino Log (HEX)
-      hexvalue = String(results.value); //Hier kurz eine variable machen um nicht in allen if statements die funktion durch zu führen (performance)
-      if(hexvalue == 0x1101){ //Grünes zeichen von Ampel
-        AmpelPing(0x1101);
-      }else if(hexvalue == 0x1210){ //Ampel Anfahrt 
-        //Geb Signal nach hinten weiter
-        SendIR(0x1210, 2, 0);
-        AmpelAnfahrt(); //Fängt ann an den nächsten mann anzufahren (7cm) und wartet dann
-      }
-      irrecv.resume(); //Reset + es wird wieder vom Pin auf Info gewartet.
-  }
 }
 void RedLineReached(){ //Muss von Farbsensor gecallt werden und kann auch nur von index 1 gecallt werden
   //Ping hinter dich das die zu dir bis auf eine bestimmte distanz auffahren sollen und dann auch stehen bleiben.

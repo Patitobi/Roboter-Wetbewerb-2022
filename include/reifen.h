@@ -6,3 +6,5 @@ const int R1 = 10;
 
 #define VOR 1
 #define STOP 0
+
+void reifen(int seite, int mode);
