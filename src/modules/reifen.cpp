@@ -1,4 +1,6 @@
 #include "reifen.h"
+int L1 = 9;
+int R1 = 10;
 
 void reifen_pinSetup()
 {

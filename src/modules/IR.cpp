@@ -11,9 +11,9 @@ void IR_pinSetup()
     // attachInterrupt(digitalPinToInterrupt(3), CodetoBeExecutedOnInterrupt, CHANGE); //wenn sich pin 3 ändert dann führe interruptcode aus
     Serial.begin(115200);
     // Start sync with other cars
-    reifen(0, STOP);
+    //reifen(0, STOP);
     Serial.println("GO");
-    GetmyIndex();
+    //GetmyIndex();
 }
 
 void SendIR(long Code, int repeat, int dir)
@@ -63,18 +63,18 @@ void AmpelPing(long Code)
         // Pass IR Signal to the Cars behind
         SendIR(Code, 3, 0); // Send 3x hinter dich (0 =  nach hinten)
         // Start driving forward
-        reifen(0, VOR);
+        //reifen(0, VOR);
     }
 }
 void AmpelAnfahrt()
 { // Wird aufgerufen um dem vordermann bis auf 5cm aufzufahren und dann zu warten bis Grünes Licht signal vom vordermann kommt.
     // Fahr so lange an bis was 7 cm vor deiner nase ist dann bleib stehen und warte einfach nur bis das "Ampel ist grün" Signal kommt.
-    reifen(0, VOR);
-    while (entfernung[0] > 70)
+    //reifen(0, VOR);
+    /*while (entfernung[0] > 70)
     {
-        updateSensors();
-    } // Warte bis auto vorne 7 cm nah ist
-    reifen(0, STOP);
+        //updateSensors();
+    }*/ // Warte bis auto vorne 7 cm nah ist
+    //reifen(0, STOP);
 }
 void RedLineReached()
 { // Muss von Farbsensor gecallt werden und kann auch nur von index 1 gecallt werden

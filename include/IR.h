@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <IRremote.hpp>
-#include "reifen.h"
-#include "USS.h"
+//#include "reifen.h"
+//#include "USS.h"
 
 // Variablen
 String hexvalue;

@@ -58,13 +58,13 @@ void USScheck()
             digitalWrite(30, LOW);
             digitalWrite(34, LOW);
 
-            reifen(0, STOP);
+            //reifen(0, STOP);
         }
         else
         {
             digitalWrite(30, HIGH);
             digitalWrite(34, HIGH);
-            reifen(0, VOR);
+            //reifen(0, VOR);
         }
     }
 }
