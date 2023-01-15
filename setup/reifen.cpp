@@ -4,10 +4,10 @@ class Reifen {
 private:
   // Variablen
   //  pins zum ansteuern von den mosfets
-  const int Mos0 = 9;
-  const int Mos1 = 10;
-  const int Mos2 = 0;
-  const int Mos3 = 0;
+  const int Mos0 = 30; //Auf beste belegung umgelegt
+  const int Mos1 = 31; //Auf beste belegung umgelegt
+  const int Mos2 = 32; //Auf beste belegung umgelegt
+  const int Mos3 = 33; //Auf beste belegung umgelegt
   // geschwindischkeit von 0-100%
   int speed = 0;
 
@@ -45,7 +45,7 @@ public:
     else if (newspeed < 0)
       stop();
   }
-  int getspeed() // gibt die akktuel eingestellte geschwindichkeit wieder 
+  int getspeed() // gibt die akktuel eingestellte geschwindichkeit wieder (komplett bescheuert)
   {
     return speed;
   }

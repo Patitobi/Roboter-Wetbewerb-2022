@@ -11,8 +11,8 @@ void IR_pinSetup()
     // attachInterrupt(digitalPinToInterrupt(3), CodetoBeExecutedOnInterrupt, CHANGE); //wenn sich pin 3 ändert dann führe interruptcode aus
     Serial.begin(115200);
     // Start sync with other cars
-    reifen(0, STOP);
-    Serial.println("GO");
+    //reifen(0, STOP);
+    Serial.println("Getting Index...");
     GetmyIndex();
 }
 
@@ -46,12 +46,6 @@ void GetIR()
         { // Grünes zeichen von Ampel
             AmpelPing(0x1101);
         }
-        else if (hexvalue == 0x1210)
-        { // Ampel Anfahrt
-            // Geb Signal nach hinten weiter
-            SendIR(0x1210, 2, 0);
-            AmpelAnfahrt(); // Fängt ann an den nächsten mann anzufahren (7cm) und wartet dann
-        }
         irrecv.resume(); // Reset + es wird wieder vom Pin auf Info gewartet.
     }
 }
@@ -63,18 +57,8 @@ void AmpelPing(long Code)
         // Pass IR Signal to the Cars behind
         SendIR(Code, 3, 0); // Send 3x hinter dich (0 =  nach hinten)
         // Start driving forward
-        reifen(0, VOR);
+        //reifen(0, VOR);
     }
-}
-void AmpelAnfahrt()
-{ // Wird aufgerufen um dem vordermann bis auf 5cm aufzufahren und dann zu warten bis Grünes Licht signal vom vordermann kommt.
-    // Fahr so lange an bis was 7 cm vor deiner nase ist dann bleib stehen und warte einfach nur bis das "Ampel ist grün" Signal kommt.
-    reifen(0, VOR);
-    while (entfernung[0] > 70)
-    {
-        updateSensors();
-    } // Warte bis auto vorne 7 cm nah ist
-    reifen(0, STOP);
 }
 void RedLineReached()
 { // Muss von Farbsensor gecallt werden und kann auch nur von index 1 gecallt werden
@@ -84,7 +68,7 @@ void RedLineReached()
     if (NuminReihe == 1)
         SendIR(0x1240, 2, 1); // If Abfrage nur zur Sicherheit. Eigentlich unnötig. //2. Vorderes Auto sendet Signal zur ampel damit Ampel anfängt zu agieren
     // Warte nun auf Ampel Signal und gebe wenn  Ampel Signal da das Signal an die hinteren weiter
-    while (hexvalue != 0x1101)
+    while (hexvalue != String(0x1101))
     { // String() Fehlt kb gerade
         GetIR();
     }

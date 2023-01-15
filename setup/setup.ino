@@ -1,7 +1,8 @@
 #include <IRremote.hpp>
-#include "C:\Users\kesse\Documents\Arduino\RP\setup\reifen.cpp"
-#include "C:\Users\kesse\Documents\Arduino\RP\setup\USS.cpp"
-#include "C:\Users\kesse\Documents\Arduino\RP\setup\farbSens.cpp"
+#include "reifen.cpp" //Datei Name reicht da es in der selben Directory ist
+#include "USS.cpp"
+#include "farbSens.cpp"
+//IR Wird automatisch eingebunden da es eine .ino Datei in der Selber Directory ist (Glaube ich)
 
 // Variablen IR
 String hexvalue;
@@ -16,14 +17,16 @@ bool synced;
 String NextMoveBehindMe;    // Hat das Vorhaben von dem Auto vor sich in sich
 String NextMoveInfrontOfMe; // Hat das Vorhaben von dem Auto hinter sich in sich
 
-Reifen Reifen; // noch nicht ganz Fertig
-USS USS;
-FarbSensoren FarbSensoren;
+Reifen reifen; // noch nicht ganz Fertig !(variabel name muss anders sein als der der Klasse)! <- Schon gefixxt
+USS uss; //--Falls du hier Errors bekommst dann versuch mal die Objekte ganz oben im Setup zu erstellen.--
+FarbSensoren farbsensoren;
 
 void setup()
 {
     Serial.begin(9600);
     Serial.println("Test"); //wird gemacht weil der Serial beim ertsen print sonst quatch macht
+    reifen.stop(); //Fahr erstmal nicht sondern warte auf Sync
+    IR_pinSetup();//Wichtig!! Muss als letztes gecalled werden da ab hier auf Sync gewartet wird
     setupcheck();
 }
 
@@ -33,8 +36,8 @@ void loop()
 }
 // checkt ob alle ojeckte ihren Constructor benutzt haben
 void setupcheck(){
-    if(!Reifen.setup) Serial.print("Reifen Setup False");
-    if(!USS.setup) Serial.print("USS Setup False");
-    if(!FarbSensoren.setup) Serial.print("FarbSensoren Setup False");
-    if(FarbSensoren.setup&&USS.setup&&Reifen.setup) Serial.print("Setup done");
+    if(!reifen.setup) Serial.println("Reifen Setup Failed");
+    if(!uss.setup) Serial.println("USS Setup Failed");
+    if(!farbsensoren.setup) Serial.println("FarbSensoren Setup Failed");
+    if(farbsensoren.setup && uss.setup && reifen.setup) Serial.println("Setup done");
 }
