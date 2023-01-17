@@ -38,18 +38,13 @@ public:
     }
   }
   // gibt alle werte die gemessen werden aus mit sensoren nummer
-  void debug()
-  {
-    Serial.println("Senssor:      Wert:");
-    Serial.println("1           ");
-    Serial.print(updatesensor(0));
-    Serial.println("2           ");
-    Serial.print(updatesensor(1));
-    Serial.println("3           ");
-    Serial.print(updatesensor(2));
-    Serial.println("4           ");
-    Serial.print(updatesensor(3));
-  }
+void USSDebug(){
+    Serial.println("entfernung 1" + " " + String(entfernung[0]));
+    Serial.println("entfernung 2" + " " + String(entfernung[1]));
+    Serial.println("entfernung 3" + " " + String(entfernung[2]));
+    Serial.println("entfernung 4" + " " + String(entfernung[3]));
+    Serial.println(" ");
+}
 
 private:
   const int sensPins[4][2] = {{45, 40}, {46, 40}, {47, 40}, {48, 40}}; // 0 ist Output(Trigger) 1 Slot ist Input(Echo)
