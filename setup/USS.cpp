@@ -70,14 +70,3 @@ private:
     return duration * 0.34 / 2; // Speed of sound wave divided by 2 (go and back)
   }
 };
-
-USS Sensor;
-
-void setup() {
-  Serial.begin(9600);
-}
-
-void loop(){
-  Sensor.debug();
-  delay(400);
-}

@@ -95,7 +95,7 @@ void GetmyIndex()
     while (!synced)
     {
         GetIR();
-        if (hexvalue == String(/*Fernbedienung Index 1 Code*/))
+        if (hexvalue == String(0xFF30CF))
         {
             NuminReihe = 1;
             WaitforStart();
