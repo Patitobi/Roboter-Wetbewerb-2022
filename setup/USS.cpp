@@ -8,13 +8,13 @@ public:
   {
     for (int i = 0; i < 4; i++)
     {
-      pinMode(sensPins[i][0], OUTPUT);
-      pinMode(sensPins[i][1], INPUT);
+      pinMode(triggePin, OUTPUT);
+      pinMode(sensPins[i], INPUT);
     }
     setup = true;
   }
 
-  int entfernung[4] = {0, 0, 0, 0};
+  double entfernung[4] = {0, 0, 0, 0};
   // zum updaten von allen USS
   void updateSensors()
   {
@@ -22,15 +22,9 @@ public:
     for (int i = 0; i < 4; i++)
     {
       entfernung[i] = 0;
-      temp = 0;
       for (int x = 0; x < durschnittaus; x++)
       {
-        temp = updatesensor(i);
-        if (temp > 1200 || temp < 0)
-        {
-          temp = updatesensor(i);
-        }
-        entfernung[i] += temp;
+        entfernung[i] += updatesensor(i);
       }
       entfernung[i] /= durschnittaus;
       // Serial.print("entfernung");
@@ -38,31 +32,52 @@ public:
     }
   }
   // gibt alle werte die gemessen werden aus mit sensoren nummer
-void USSDebug(){
-    Serial.println("entfernung 1" + " " + String(entfernung[0]));
-    Serial.println("entfernung 2" + " " + String(entfernung[1]));
-    Serial.println("entfernung 3" + " " + String(entfernung[2]));
-    Serial.println("entfernung 4" + " " + String(entfernung[3]));
-    Serial.println(" ");
-}
+  void debug()
+  {
+    Serial.println("Senssor:      Wert:");
+    Serial.print("1           ");
+    Serial.println(String(updatesensor(0)));
+    Serial.print("2           ");
+    Serial.println(String(updatesensor(1)));
+    Serial.print("3           ");
+    Serial.println(String(updatesensor(2)));
+    Serial.print("4           ");
+    Serial.println(String(updatesensor(3)));
+  }
 
 private:
-  const int sensPins[4][2] = {{45, 40}, {46, 40}, {47, 40}, {48, 40}}; // 0 ist Output(Trigger) 1 Slot ist Input(Echo)
+  int triggePin = 40;
+  int sensPins[4] = {45, 46, 47, 48}; //0 Slot ist Input(Echo) 1 ist Output(Trigger)
   int durschnittaus = 10;
 
-  int updatesensor(int sensnum)
+  double updatesensor(int sensnum)
   {
     long duration;
     // Clears the trigPin condition
-    digitalWrite(sensPins[sensnum][1], LOW);
+    digitalWrite(triggePin, LOW);
     delayMicroseconds(2);
     // Sets the trigPin HIGH (ACTIVE) for 10 microseconds
-    digitalWrite(sensPins[sensnum][1], HIGH);
+    digitalWrite(triggePin, HIGH);
     delayMicroseconds(10);
-    digitalWrite(sensPins[sensnum][1], LOW);
+    digitalWrite(triggePin, LOW);
     // Reads the echoPin, returns the sound wave travel time in microseconds
-    duration = pulseIn(sensPins[sensnum][0], HIGH);
+    
+    duration = pulseIn(sensPins[sensnum], HIGH);
+    //duration = pulseIn(sensPins[sensnum], LOW);
+    
     // Calculating the distance
+    //Serial.println(String(duration));
     return duration * 0.34 / 2; // Speed of sound wave divided by 2 (go and back)
   }
 };
+
+USS Sensor;
+
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop(){
+  Sensor.debug();
+  delay(400);
+}
