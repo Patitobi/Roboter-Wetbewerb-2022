@@ -2,7 +2,7 @@
 
 class FarbSensoren {
 public:
-  const int anzSensoren = 3;
+  const int anzSensoren = 1;
 
   bool setup = false;
   FarbSensoren() {
