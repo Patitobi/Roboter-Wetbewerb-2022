@@ -14,51 +14,26 @@ decode_results results;   // erstelle Object in welches dann die Daten nach jede
 
 int NuminReihe;
 bool synced;
-String NextTurn;  // Hat die Nächste Abbiegung von dem Vorderman in sich
-bool IgnoreNextRedLine;  // Wenn das Auto vor dir gerade eine rote Linie erreicht hat und du noch nicht dran bist dann ignoriere die rote Linie
-int RedLineCount;
+String NextMoveBehindMe;     // Hat das Vorhaben von dem Auto vor sich in sich
+String NextMoveInfrontOfMe;  // Hat das Vorhaben von dem Auto hinter sich in sich
 
-Reifen reifen;  // noch nicht ganz Fertig
-USS uss;
+Reifen reifen;  // noch nicht ganz Fertig !(variabel name muss anders sein als der der Klasse)! <- Schon gefixxt
+USS uss;        //--Falls du hier Errors bekommst dann versuch mal die Objekte ganz oben im Setup zu erstellen.--
 FarbSensoren farbsensoren;
 
 void setup() {
   Serial.begin(9600);
   Serial.println("Test");  //wird gemacht weil der Serial beim ertsen print sonst quatch macht
   reifen.stop();           //Fahr erstmal nicht sondern warte auf Sync
-  IR_pinSetup();           //Wichtig!! Muss als letztes gecalled werden da ab hier auf Sync gewartet wird
+  //IR_pinSetup();           //Wichtig!! Muss als letztes gecalled werden da ab hier auf Sync gewartet wird
   setupcheck();
 }
 
 void loop() {
-  update();
-  machen();
-}
-void update(){
-  uss.updateSensors();
-  farbsensoren.updateFarben();
-  GetIR();
-}
-void machen(){
-  //IR Hexvalue Check
-  if(hexvalue == 0x1101){ // Grünes zeichen von Ampel
-    AmpelPing(0x1101);
-  }else if(hexvalue == String(0x1210)){
-    //Rote Linie erreicht, Einreihen. (Wird von index 1 gecallt und wird an alle anderen nach hinten weiter gereicht)
-  }else if(hexvalue == String(0x1230)){ //Nächste Kreuzung rechts. Kommt vom Vordermann
-    NextTurn = "right"; //Nächste Abbiegung rechts
-  }else if(hexvalue == String(0x1231)){
-    NextTurn = "left"; //Nächste Abbiegung links
-  }else if(hexvalue == String(0x1220)){
-    SendIR(0x1220, 2, 0); //Weiter Fahren nach hinten weiter geben 
-    reifen.start(); //Und los fahren
-  }
-  //Farbsensor Check
-  if(NuminReihe == 1 && farbsensoren.Rot && !IgnoreNextRedLine){ //Wenn Rote Linie erreicht
-    RedLineReached();
-    IgnoreNextRedLine = true;
-  }
-  //!!Wichtig!! IgnoreNextRedLine muss bei Kurven Erkennung von FarbsenS.cpp auf false gesetzt werden
+  reifen.turn(0);
+  delay(500);
+  reifen.turn(1);
+  delay(500);
 }
 // checkt ob alle ojeckte ihren Constructor benutzt haben
 void setupcheck() {

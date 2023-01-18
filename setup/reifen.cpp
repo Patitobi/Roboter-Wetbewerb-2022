@@ -1,23 +1,12 @@
 #include <Arduino.h>
-class Reifen
-{
-private:
-  // Variablen
-  //  pins zum ansteuern von den mosfets
-  // ein aus schalter für rechts
-  const int Mos0 = 12;
-  // geschwindichkeits steller rechts
-  const int Mos1 = 10;
-  // ein aus schalter für links
-  const int Mos2 = 8;
-  // geschwindichkeits steller links
-  const int Mos3 = 9;
-  // geschwindischkeit von 0-100%
-  int speed = 0;
 
+class Reifen {
 public:
+  // geschwindischkeit von 0-100% für jede seite
+  int speed[2] = { 0, 0 };
+
   bool setup = false;
-  Reifen() // setzt alle Mosfets als output
+  Reifen()  // setzt alle Mosfets als output
   {
     pinMode(Mos0, OUTPUT);
     pinMode(Mos1, OUTPUT);
@@ -25,53 +14,90 @@ public:
     pinMode(Mos3, OUTPUT);
     setup = true;
   }
-  void stop() // stopt sofort
+  void stop()  // stopt sofort
   {
-    speed = 0;
+    speed[0] = 0;
+    speed[1] = 0;
     digitalWrite(Mos0, LOW);
     digitalWrite(Mos2, LOW);
 
-    analogWrite(Mos1,0);
-    analogWrite(Mos3,0);
+    analogWrite(Mos1, 0);
+    analogWrite(Mos3, 0);
 
     Serial.println("STOP");
   }
-  void start() // startet auf die zufor gesetzte geschwindischkeit
+  void start()  // startet auf die zufor gesetzte geschwindischkeit
   {
-    if (speed <= 0)
-    {
-      Serial.println("Reifen:'Kein speed angegeben'");
-      Serial.println(speed);
-    }
-    else
-    {
-      digitalWrite(Mos0, HIGH);
-      digitalWrite(Mos2, HIGH);
-      analogWrite(Mos1, map(speed, 0, 100, 0, 255));
-      analogWrite(Mos3, map(speed, 0, 100, 0, 255));
-    }
+    digitalWrite(Mos0, RechtsRun);
+    digitalWrite(Mos2, LinksRun);
+    analogWrite(Mos1, map(speed, 0, 100, 0, 255));
+    analogWrite(Mos3, map(speed, 0, 100, 0, 255));
   }
-  void setspeed(int newspeed) // setzt die geschwindichkeit von 0-100
+  void setspeed(int newspeed)  // setzt die geschwindichkeit von 0-100
   {
-    if (newspeed > 100)
-    {
-      speed = 100;
+    if (newspeed > 100) {
+      speed[0] = 100;
+      speed[1] = 100;
       start();
-    }
-    else if (newspeed < 0)
-    {
+    } else if (newspeed < 0) {
       stop();
-    }
-    else
-    {
-      speed = newspeed;
+    } else {
+      speed[0] = newspeed;
+      speed[1] = newspeed;
       start();
     }
     Serial.print("Set speed to");
-    Serial.println(speed);
+    Serial.println(speed[0]);
   }
-  int getspeed() // gibt die akktuel eingestellte geschwindichkeit wieder
-  {
-    return speed;
+  void turn(int richtung) {
+    if (richtung == 0) {
+      setspeedLeft(0);
+      setspeedRight(100);
+      start();
+    } else if (richtung == 1) {
+      setspeedLeft(100);
+      setspeedRight(0);
+      start();
+    }
+  }
+
+private:
+  // Variablen
+  //  pins zum ansteuern von den mosfets
+
+  // ein aus schalter für rechts PIN!!
+  const int Mos0 = 12;
+  // geschwindichkeits steller rechts PIN!!
+  const int Mos1 = 10;
+  // ein aus schalter für links PIN!!
+  const int Mos2 = 8;
+  // geschwindichkeits steller links PIN!!
+  const int Mos3 = 9;
+  // an und aus schlater Links
+  int LinksRun = 0;
+  // an und aus schlater Rechts
+  int RechtsRun = 0;
+
+  void setspeedLeft(int newspeed) {
+    if (newspeed <= 0) {
+      LinksRun = 0;
+    } else if (newspeed >= 100) {
+      speed[0] = 100;
+      LinksRun = 1;
+    } else {
+      speed[0] = newspeed;
+      LinksRun = 1;
+    }
+  }
+  void setspeedRight(int newspeed) {
+    if (newspeed <= 0) {
+      RechtsRun = 0;
+    } else if (newspeed >= 100) {
+      speed[1] = 100;
+      RechtsRun = 1;
+    } else {
+      speed[1] = newspeed;
+      RechtsRun = 1;
+    }
   }
 };
