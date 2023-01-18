@@ -1,0 +1,31 @@
+IR Code Doc:
+
+Jeder IR Code besteht aus 0x + Die ersten zwei Ziffern wie z.B. 11 und dann noch zwei wie z.b. 01
+
+Die ersten beiden Ziffern der Ampel Codes sind immer "11" und die nächsten beiden sind der Command der Ampel.
+
+Lange Rede kurzer Sinn: ersten beiden Zwiffern sagen woher der code kommt und die anderen beiden sind der Command
+
+Ampel:
+0x1101 = Grün an Auto mit Index 1.
+
+Autos selber (0):
+snyc:
+0x1201 = Ready to sync as Index 1 (Alles klar Chef)
+0x1202 = Ready to sync as Index 2 (Alles klar Chef)
+0x1203 = Ready to sync as Index 3 (Alles klar Chef)
+0x1204 = Ready to sync as Index 4 (Alles klar Chef)
+
+stehen (1):
+0x1210 = Rote Linie erkannt, wir warten. //Kann nur von Index 1 gecallt werden und wird dann weiter gereicht an die hinten.
+
+fahren (2):
+0x1220 = Ampel Gibt grünes signal wir fahren los.
+
+abbiegen (3):
+0x1230 = Jungs wir fahren nach Rechts. //Kann nur von Index 1 gecallt werden und wird dann nacht hinten weiter gereicht.
+0x1231 = Jungs wir fahren nach Links. //Kann nur von Index 1 gecallt werden und wird dann nacht hinten weiter gereicht.
+
+Auto an Ampel (4):
+0x1240 = Autos sind bereit wir warten auf Grünes Signal
+
