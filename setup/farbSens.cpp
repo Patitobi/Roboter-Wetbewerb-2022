@@ -2,6 +2,10 @@
 
 class FarbSensoren {
 public:
+  /* Farben die von den Sensoren gemessen wurden
+    Rot=0; Schwarz=1; Weiss=2*/
+  int farben[3] = { -1, -1, -1 };
+
   const int anzSensoren = 3;
 
   bool setup = false;
@@ -19,9 +23,6 @@ public:
 
     setup = true;
   }
-  /* Farben die von den Sensoren gemessen wurden
-    Rot=0; Schwarz=1; Weiss=2*/
-  int farben[3] = { -1, -1, -1 };
 
   bool Rot = false;
 

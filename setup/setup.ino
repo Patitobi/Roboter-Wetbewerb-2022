@@ -16,7 +16,7 @@ int NuminReihe;
 bool synced;
 String NextTurn;  // Hat die Nächste Abbiegung von dem Vorderman in sich
 bool IgnoreNextRedLine;  // Wenn das Auto vor dir gerade eine rote Linie erreicht hat und du noch nicht dran bist dann ignoriere die rote Linie
-int RedLineCount;
+int RedLineCount; // !!! chef wufür die variable hast doch die "IgnoreNextRedLine"? !!!
 
 Reifen reifen;  // noch nicht ganz Fertig
 USS uss;
@@ -26,8 +26,8 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Test");  //wird gemacht weil der Serial beim ertsen print sonst quatch macht
   reifen.stop();           //Fahr erstmal nicht sondern warte auf Sync
-  IR_pinSetup();           //Wichtig!! Muss als letztes gecalled werden da ab hier auf Sync gewartet wird
   setupcheck();
+  //IR_pinSetup();           //Wichtig!! Muss als letztes gecalled werden da ab hier auf Sync gewartet wird
 }
 
 void loop(){
@@ -37,6 +37,7 @@ void loop(){
 void update(){
   uss.updateSensors();
   farbsensoren.updateFarben();
+  reifen.update(farbsensoren.farben); // müssen farben übergabben sonst kein zugriff auf die variable in reifen.cpp
   GetIR();
 }
 void machen(){
@@ -51,7 +52,7 @@ void machen(){
     NextTurn = "left"; //Nächste Abbiegung links
   }else if(hexvalue == String(0x1220)){
     SendIR(0x1220, 2, 0); //Weiter Fahren nach hinten weiter geben 
-    reifen.start(); //Und los fahren
+    reifen.setspeed(50); //Und los fahren
   }
   //Farbsensor Check
   if(NuminReihe == 1 && farbsensoren.Rot && !IgnoreNextRedLine){ //Wenn Rote Linie erreicht

@@ -83,7 +83,7 @@ void GetmyIndex(){
             NuminReihe = 3;
             WaitforStart();
         }
-        else if (hexvalue == String(0xFF10EF))){
+        else if (hexvalue == String(0xFF10EF)){
             NuminReihe = 4;
             WaitforStart();
         }
