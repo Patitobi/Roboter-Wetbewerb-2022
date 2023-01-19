@@ -66,13 +66,13 @@ private:
   //  pins zum ansteuern von den mosfets
 
   // ein aus schalter für rechts PIN!!
-  const int Mos0 = 12;
+  const int Mos0 = 37;
   // geschwindichkeits steller rechts PIN!!
-  const int Mos1 = 10;
+  const int Mos1 = 38;
   // ein aus schalter für links PIN!!
-  const int Mos2 = 8;
+  const int Mos2 = 9;
   // geschwindichkeits steller links PIN!!
-  const int Mos3 = 9;
+  const int Mos3 = 10;
   // an und aus schlater Links
   int LinksRun = 0;
   // an und aus schlater Rechts

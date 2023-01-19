@@ -20,7 +20,7 @@ public:
     setup = true;
   }
   /* Farben die von den Sensoren gemessen wurden
-    Rot=0; Schwartz=1; Weiss=2*/
+    Rot=0; Schwarz=1; Weiss=2*/
   int farben[3] = { -1, -1, -1 };
 
   bool Rot = false;
@@ -76,7 +76,7 @@ private:
   const int SENSOR_S2 = 4;
   const int SENSOR_S3 = 3;
   // pin andem das singnal zurück kommt
-  const int SENSOR_OUT[3] = { 5, 0, 0 };
+  const int SENSOR_OUT[3] = { 31, 33, 35 };
 
   // gemessende werte werden hier gespeichert
   int farbSensorVal[3][3];  // [x][] ist der sensor 0-3; [][x] ist der wert in rgb reifolge 0-3
