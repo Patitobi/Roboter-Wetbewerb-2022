@@ -9,7 +9,6 @@ void IR_pinSetup()
     pinMode(LED_BUILTIN, OUTPUT);
     IrSender.begin(3);
     // attachInterrupt(digitalPinToInterrupt(3), CodetoBeExecutedOnInterrupt, CHANGE); //wenn sich pin 3 ändert dann führe interruptcode aus
-    Serial.begin(115200);
     // Start sync with other cars
     //reifen(0, STOP);
     Serial.println("Getting Index...");
@@ -64,7 +63,7 @@ void WaitforStart()
     while (!synced){
         // Warte Aufs Go von der Fernbedienung und wenn Signal 0x1211 kommt Fahre los
         GetIR();
-        if (hexvalue == String(0xFF30CF)){
+        if (hexvalue == String(0xFFA25D)){ //Power Taste
             synced = true;
         }
     }
@@ -76,15 +75,15 @@ void GetmyIndex(){
             NuminReihe = 1;
             WaitforStart();
         }
-        else if (hexvalue == String(/*Fernbedienung Index 2 Code*/)){
+        else if (hexvalue == String(0xFF18E7)){
             NuminReihe = 2;
             WaitforStart();
         }
-        else if (hexvalue == String(/*Fernbedienung Index 3 Code*/)){
+        else if (hexvalue == String(0xFF7A85)){
             NuminReihe = 3;
             WaitforStart();
         }
-        else if (hexvalue == String(/*Fernbedienung Index 4 Code*/)){
+        else if (hexvalue == String(0xFF10EF))){
             NuminReihe = 4;
             WaitforStart();
         }
