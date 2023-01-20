@@ -10,63 +10,64 @@ public:
   bool setup = false;
   Reifen() // setzt alle Mosfets als output
   {
-    pinMode(Mos1, OUTPUT);
-    pinMode(Mos3, OUTPUT);
+    pinMode(MosR, OUTPUT);
+    pinMode(MosL, OUTPUT);
     setup = true;
   }
   void update(int farben[3]) // bestimmt die richtung in die gefaren wird basirens auf dem farbsensor
   {
-    if (farben[0] == 2 || farben[2] == 2)
+    if (!korrigere)
     {
       if (farben[0] == 2 && farben[1] == 2 && farben[2] == 2)
       {
         whiteLine = true;
       }
-      else if (farben[0] == 2 && (farben[1] == 2 || farben[1] == 1))
+      else if (farben[0] == 2 && farben[1] == 1)
       {
         drive = 0;
       }
-      else if (farben[2] == 2 && (farben[1] == 2 || farben[1] == 1))
+      else if (farben[2] == 2 && farben[1] == 1)
       {
         drive = 2;
       }
+      else
+      {
+        drive = 1;
+      }
     }
-    else
-    {
-      drive = 1;
-    }
+
     fahren();
   }
   void stop() // stopt sofort
   {
     speed[0] = 0;
     speed[1] = 0;
-    analogWrite(Mos1, 0);
-    analogWrite(Mos3, 0);
+    analogWrite(MosR, 0);
+    analogWrite(MosL, 0);
 
     Serial.println("STOP");
   }
   void start() // startet auf die zufor gesetzte geschwindischkeit
   {
-    analogWrite(Mos1, map(speed, 0, 100, 0, 250));
-    analogWrite(Mos3, map(speed, 0, 100, 0, 250));
+    analogWrite(MosR, speed[1]);
+    analogWrite(MosL, speed[0]);
   }
   void setspeed(int newspeed) // setzt die geschwindichkeit von 0-100
   {
     if (newspeed > 100)
     {
-      speed[0] = 100;
-      speed[1] = 100;
+      speed[0] = map(100, 0, 100, 0, 250);
+      speed[1] = map(100, 0, 100, 0, 250);
       start();
     }
-    else if (newspeed < 0)
+    else if (newspeed <= 0)
     {
       stop();
     }
     else
     {
-      speed[0] = newspeed;
-      speed[1] = newspeed;
+      speed[0] = map(newspeed, 0, 100, 0, 250);
+      speed[1] = map(newspeed, 0, 100, 0, 250);
       start();
     }
     Serial.print("Set speed to");
@@ -92,9 +93,9 @@ private:
   //  pins zum ansteuern von den mosfets
 
   // geschwindichkeits steller rechts PIN!!
-  const int Mos1 = 9;
+  const int MosR = 9;
   // geschwindichkeits steller links PIN!!
-  const int Mos3 = 10;
+  const int MosL = 10;
   // richtung in die wir fahren MÜSSEN wird 0 1 2
   int drive = 1;
   // time andem das erste mal korigirt wurde
@@ -102,30 +103,30 @@ private:
   // ob wir gerade am korrigere sind (für timer wichtig)
   bool korrigere = false;
   // in welchen abständen wir korigiren sollen (gerade 1sec)
-  unsigned long korrekturinterval = 1000;
+  unsigned long korrekturinterval = 500;
 
   void fahren()
   { // wenn auto wieder richtig auf kurs ist
-    if (drive == 1 && speed[0] != speed[1])
+    if (drive == 1 && speed[0] != speed[1] && !korrigere)
     {
-      setspeed(100);
+      setspeed(70);
     }
     else if (drive = 0)
     {
       if (millis() - starttimer + korrekturinterval < 0)
       {
-        setspeedLeft(0);
-        setspeedRight(100);
+        setspeedLeft(30);
+        setspeedRight(70);
       }
       else if (millis() - starttimer + korrekturinterval > 0)
       {
-        setspeedLeft(50);
-        setspeedRight(100);
+        setspeedLeft(40);
+        setspeedRight(70);
       }
       else if (millis() - starttimer + korrekturinterval * 2 > 0)
       {
-        setspeedLeft(75);
-        setspeedRight(100);
+        setspeedLeft(60);
+        setspeedRight(70);
         korrigere = false;
       }
       start();
@@ -134,18 +135,18 @@ private:
     {
       if (millis() - starttimer + korrekturinterval < 0)
       {
-        setspeedLeft(100);
-        setspeedRight(0);
+        setspeedLeft(70);
+        setspeedRight(30);
       }
       else if (millis() - starttimer + korrekturinterval > 0)
       {
-        setspeedLeft(100);
-        setspeedRight(50);
+        setspeedLeft(70);
+        setspeedRight(40);
       }
       else if (millis() - starttimer + korrekturinterval * 2 > 0)
       {
-        setspeedLeft(100);
-        setspeedRight(75);
+        setspeedLeft(70);
+        setspeedRight(60);
         korrigere = false;
       }
       start();
@@ -164,11 +165,11 @@ private:
     }
     else if (newspeed >= 100)
     {
-      speed[0] = 100;
+      speed[0] = map(100, 0, 100, 0, 250);
     }
     else
     {
-      speed[0] = newspeed;
+      speed[0] = map(newspeed, 0, 100, 0, 250);
     }
   }
   void setspeedRight(int newspeed)
@@ -179,11 +180,11 @@ private:
     }
     else if (newspeed >= 100)
     {
-      speed[1] = 100;
+      speed[1] = map(100, 0, 100, 0, 250);
     }
     else
     {
-      speed[1] = newspeed;
+      speed[1] = map(newspeed, 0, 100, 0, 250);
     }
   }
 };
