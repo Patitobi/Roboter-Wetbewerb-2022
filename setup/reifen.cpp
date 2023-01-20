@@ -48,8 +48,8 @@ public:
   }
   void start() // startet auf die zufor gesetzte geschwindischkeit
   {
-    analogWrite(Mos1, map(speed, 0, 100, 0, 255));
-    analogWrite(Mos3, map(speed, 0, 100, 0, 255));
+    analogWrite(Mos1, map(speed, 0, 100, 0, 250));
+    analogWrite(Mos3, map(speed, 0, 100, 0, 250));
   }
   void setspeed(int newspeed) // setzt die geschwindichkeit von 0-100
   {
@@ -92,7 +92,7 @@ private:
   //  pins zum ansteuern von den mosfets
 
   // geschwindichkeits steller rechts PIN!!
-  const int Mos1 = 38;
+  const int Mos1 = 9;
   // geschwindichkeits steller links PIN!!
   const int Mos3 = 10;
   // richtung in die wir fahren MÜSSEN wird 0 1 2
