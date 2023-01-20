@@ -31,8 +31,10 @@ void setup() {
 }
 
 void loop(){
-  update();
-  machen();
+  //farbsensoren.debug();
+  farbsensoren.clacdebug();
+  //update();
+  //machen();
 }
 void update(){
   uss.updateSensors();
@@ -44,6 +46,7 @@ void machen(){
   //IR Hexvalue Check
   if(hexvalue == 0x1101){ // Grünes zeichen von Ampel
     AmpelPing(0x1101);
+    reifen.setspeed(50);
   }else if(hexvalue == String(0x1210)){
     //Rote Linie erreicht, Einreihen. (Wird von index 1 gecallt und wird an alle anderen nach hinten weiter gereicht)
   }else if(hexvalue == String(0x1230)){ //Nächste Kreuzung rechts. Kommt vom Vordermann
@@ -56,6 +59,7 @@ void machen(){
   }
   //Farbsensor Check
   if(NuminReihe == 1 && farbsensoren.Rot && !IgnoreNextRedLine){ //Wenn Rote Linie erreicht
+    reifen.stop();
     RedLineReached();
     IgnoreNextRedLine = true;
   }
