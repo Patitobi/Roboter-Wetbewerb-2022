@@ -27,19 +27,21 @@ void setup() {
   Serial.println("Test");  //wird gemacht weil der Serial beim ertsen print sonst quatch macht
   reifen.stop();           //Fahr erstmal nicht sondern warte auf Sync
   setupcheck();
-  //IR_pinSetup();           //Wichtig!! Muss als letztes gecalled werden da ab hier auf Sync gewartet wird
+  IR_pinSetup();           //Wichtig!! Muss als letztes gecalled werden da ab hier auf Sync gewartet wird
+  reifen.setspeed(40);
 }
 
 void loop(){
   //farbsensoren.debug();
   farbsensoren.clacdebug();
+  Serial.println(farbsensoren.Rot);
   //update();
   //machen();
 }
 void update(){
-  uss.updateSensors();
+  //uss.updateSensors();
   farbsensoren.updateFarben();
-  reifen.update(farbsensoren.farben); // müssen farben übergabben sonst kein zugriff auf die variable in reifen.cpp
+  //reifen.update(farbsensoren.farben); // müssen farben übergabben sonst kein zugriff auf die variable in reifen.cpp
   GetIR();
 }
 void machen(){
@@ -60,6 +62,7 @@ void machen(){
   //Farbsensor Check
   if(NuminReihe == 1 && farbsensoren.Rot && !IgnoreNextRedLine){ //Wenn Rote Linie erreicht
     reifen.stop();
+    Serial.println("rotlieneie");
     RedLineReached();
     IgnoreNextRedLine = true;
   }

@@ -86,30 +86,26 @@ private:
   void calcFarbe(int sensnum) {
     int prozWert;
     int summe;
-    int prozWerte[3];
+    int calVal[3][2]= {{30, 12},{30, 10},{30, 10}};
     int farbVote[3];
     for (int i = 0; i < 3; i++) {
       summe += farbSensorVal[sensnum][i];
     }
-    if (summe >= 30)
+    if (summe >= calVal[sensnum][0])
       farben[sensnum] = 1;
-    else if (summe <= 8)
+    else if (summe <= calVal[sensnum][1])
       farben[sensnum] = 2;
-    prozWert = summe / 100;
-    for (int i = 0; i < 3; i++) {
-      prozWerte[i] = farbSensorVal[sensnum][i] * prozWert;
-    }
-    if (prozWerte[0] < prozWerte[1] && prozWerte[0] < prozWerte[3]) {
+    if (farbSensorVal[sensnum][0] < farbSensorVal[sensnum][1] && farbSensorVal[sensnum][0] < farbSensorVal[sensnum][2]) {
       farben[sensnum] = 0;
     }
   }
   void redCheck() {
-    int count;
+    int count = 0;
     for (int i = 0; i < 3; i++) {
       if (farben[i] == 0)
         count++;
     }
-    if (count >= 2) {
+    if (count >= 3) {
       Rot = true;
     }
   }
