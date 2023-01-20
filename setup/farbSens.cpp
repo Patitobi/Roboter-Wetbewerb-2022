@@ -19,7 +19,7 @@ public:
     pinMode(SENSOR_OUT[2], INPUT);
 
     digitalWrite(SENSOR_S0, HIGH);
-    digitalWrite(SENSOR_S1, LOW);
+    digitalWrite(SENSOR_S1, HIGH);
 
     setup = true;
   }
@@ -71,11 +71,11 @@ public:
 
 private:
   // Variablen
-  const int SENSOR_S0 = 6;
-  const int SENSOR_S1 = 7;
+  const int SENSOR_S0 = 22;
+  const int SENSOR_S1 = 24;
 
-  const int SENSOR_S2 = 4;
-  const int SENSOR_S3 = 3;
+  const int SENSOR_S2 = 26;
+  const int SENSOR_S3 = 28;
   // pin andem das singnal zurück kommt
   const int SENSOR_OUT[3] = { 31, 33, 35 };
 
@@ -91,9 +91,9 @@ private:
     for (int i = 0; i < 3; i++) {
       summe += farbSensorVal[sensnum][i];
     }
-    if (summe >= 100)
+    if (summe >= 30)
       farben[sensnum] = 1;
-    else if (summe <= 45)
+    else if (summe <= 8)
       farben[sensnum] = 2;
     prozWert = summe / 100;
     for (int i = 0; i < 3; i++) {
