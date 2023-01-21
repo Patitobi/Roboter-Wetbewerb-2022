@@ -26,8 +26,9 @@ void setup() {
   Serial.println("Test");  //wird gemacht weil der Serial beim ertsen print sonst quatch macht
   reifen.stop();           //Fahr erstmal nicht sondern warte auf Sync
   setupcheck();
-  //IR_pinSetup();           //Wichtig!! Muss als letztes gecalled werden da ab hier auf Sync gewartet wird
-  reifen.setspeed(70);
+  IR_pinSetup();           //Wichtig!! Muss als letztes gecalled werden da ab hier auf Sync gewartet wird
+  analogWrite(9, 255);
+  analogWrite(10, 255);
   farbsensoren.setNum(NuminReihe);
 }
 
@@ -38,9 +39,9 @@ void loop(){
   machen();
 }
 void update(){
-  uss.updateSensors();
+  //uss.updateSensors();
   farbsensoren.updateFarben();
-  reifen.update(farbsensoren.farben); // müssen farben übergabben sonst kein zugriff auf die variable in reifen.cpp
+  //reifen.update(farbsensoren.farben); // müssen farben übergabben sonst kein zugriff auf die variable in reifen.cpp
   GetIR();
 }
 void machen(){
