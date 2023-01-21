@@ -4,7 +4,7 @@ class FarbSensoren {
 public:
   int carnum;
 
-  int calValCar1[3][2] = { { 30, 12 }, { 30, 10 }, { 30, 10 } };
+  int calValCar1[3][2] = { { 25, 15 }, { 26, 12 }, { 30, 12 } };
   int calValCar2[3][2] = { { 30, 12 }, { 30, 10 }, { 30, 10 } };
 
   int calVal[3][2];
@@ -118,7 +118,7 @@ private:
       farben[sensnum] = 1;
     else if (summe <= calVal[sensnum][1])
       farben[sensnum] = 2;
-    if (farbSensorVal[sensnum][0] < farbSensorVal[sensnum][1] && farbSensorVal[sensnum][0] < farbSensorVal[sensnum][2]) {
+    else if (farbSensorVal[sensnum][0] < farbSensorVal[sensnum][1] && farbSensorVal[sensnum][0] < farbSensorVal[sensnum][2]) {
       farben[sensnum] = 0;
     }
   }
@@ -137,11 +137,16 @@ private:
 
         calcFarbe(i);
       }
-      if (count == 2) {
+      for (int i = 0; i < 3; i++) {
+      if (farben[i] == 0)
+        count++;
+      }
+      if (count == 3) {
         RotCount++;
       } else
         RotCount = 0;
       if (RotCount == 2)
+        RotCount = 0;
         Rot = true;
     }
   }
