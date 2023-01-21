@@ -49,8 +49,8 @@ public:
   }
   void start() // startet auf die zufor gesetzte geschwindischkeit
   {
-    analogWrite(MosR, speed[1]);
-    analogWrite(MosL, speed[0]);
+    analogWrite(MosR, 100);
+    analogWrite(MosL, 100);
   }
   void setspeed(int newspeed) // setzt die geschwindichkeit von 0-100
   {
