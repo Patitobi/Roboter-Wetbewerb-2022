@@ -2,13 +2,6 @@
 
 class FarbSensoren {
 public:
-  int carnum;
-
-  int calValCar1[3][2] = { { 25, 15 }, { 26, 12 }, { 30, 12 } };
-  int calValCar2[3][2] = { { 30, 12 }, { 30, 10 }, { 30, 10 } };
-
-  int calVal[3][2];
-
   /* Farben die von den Sensoren gemessen wurden
     Rot=0; Schwarz=1; Weiss=2*/
   int farben[3] = { -1, -1, -1 };
@@ -29,20 +22,6 @@ public:
     digitalWrite(SENSOR_S1, HIGH);
 
     setup = true;
-  }
-
-  void setNum(int carNum){
-    carnum = carNum;
-    for (int i=0;i < 3; i++){
-      for (int x=0; x < 2; x++){
-        if (carnum == 1){
-        calVal[i][x] = calValCar1[i][x];
-        } else {
-        calVal[i][x] = calValCar2[i][x];
-        }
-      }
-    }
-    
   }
 
   bool Rot = false;
@@ -91,8 +70,7 @@ public:
   }
 
 private:
-
-  int RotCount = 0;
+int Rotcount = 0;
   // Variablen
   const int SENSOR_S0 = 22;
   const int SENSOR_S1 = 24;
@@ -109,7 +87,7 @@ private:
   void calcFarbe(int sensnum) {
     int prozWert;
     int summe;
-
+    int calVal[3][2] = { { 31, 12 }, { 31, 10 }, { 32, 12 } };
     int farbVote[3];
     for (int i = 0; i < 3; i++) {
       summe += farbSensorVal[sensnum][i];
@@ -118,7 +96,7 @@ private:
       farben[sensnum] = 1;
     else if (summe <= calVal[sensnum][1])
       farben[sensnum] = 2;
-    else if (farbSensorVal[sensnum][0] < farbSensorVal[sensnum][1] && farbSensorVal[sensnum][0] < farbSensorVal[sensnum][2]) {
+    if (farbSensorVal[sensnum][0] < farbSensorVal[sensnum][1] && farbSensorVal[sensnum][0] < farbSensorVal[sensnum][2]) {
       farben[sensnum] = 0;
     }
   }
@@ -128,8 +106,7 @@ private:
       if (farben[i] == 0)
         count++;
     }
-    if (count == 3) {
-      count = 0;
+    if (count >= 3) {
       for (int i = 0; i < anzSensoren; i++) {
         getRed(i);
         getGruen(i);
@@ -137,18 +114,14 @@ private:
 
         calcFarbe(i);
       }
+      count = 0;
       for (int i = 0; i < 3; i++) {
-      if (farben[i] == 0)
-        count++;
+        if (farben[i] == 0)
+          count++;
       }
-      if (count == 3) {
-        RotCount++;
-      } else
-        RotCount = 0;
-      if (RotCount == 2)
-        RotCount = 0;
-        Rot = true;
-    }
+      if (count >= 3) Rotcount++;
+    } else Rotcount=0;
+    if(Rotcount > 3) Rot = true;
   }
   void getRed(int sensnum) {
     for (int i = 0; i < 2; i++) {

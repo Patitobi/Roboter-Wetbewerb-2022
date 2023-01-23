@@ -12,12 +12,13 @@ const long TurnONCode = 0x1234;  // Platzhalter für Fernbedienungs code um anzu
 IRrecv irrecv(RECV_PIN);  // Empfänger Pin
 decode_results results;   // erstelle Object in welches dann die Daten nach jedem scan rein wandern
 
-int NuminReihe = 1;
+int NuminReihe;
 bool synced;
 String NextTurn;  // Hat die Nächste Abbiegung von dem Vorderman in sich
-bool IgnoreNextRedLine;  // Wenn das Auto vor dir gerade eine rote Linie erreicht hat und du noch nicht dran bist dann ignoriere die rote Linie
+bool IgnoreNextRedLine = false;  // Wenn das Auto vor dir gerade eine rote Linie erreicht hat und du noch nicht dran bist dann ignoriere die rote Linie
+int RedLineCount; // !!! chef wufür die variable hast doch die "IgnoreNextRedLine"? !!!
 
-Reifen reifen;
+Reifen reifen;  // noch nicht ganz Fertig
 USS uss;
 FarbSensoren farbsensoren;
 
@@ -27,14 +28,10 @@ void setup() {
   reifen.stop();           //Fahr erstmal nicht sondern warte auf Sync
   setupcheck();
   IR_pinSetup();           //Wichtig!! Muss als letztes gecalled werden da ab hier auf Sync gewartet wird
-  analogWrite(9, 255);
-  analogWrite(10, 255);
-  farbsensoren.setNum(NuminReihe);
+  reifen.setspeed(100);
 }
 
 void loop(){
-  //farbsensoren.debug();
-  //farbsensoren.clacdebug();
   update();
   machen();
 }
@@ -48,7 +45,7 @@ void machen(){
   //IR Hexvalue Check
   if(hexvalue == String(0x1101)){ // Grünes zeichen von Ampel
     AmpelPing(0x1101);
-    reifen.setspeed(70);
+    reifen.setspeed(100);
   }else if(hexvalue == String(0x1210)){
     //Rote Linie erreicht, Einreihen. (Wird von index 1 gecallt und wird an alle anderen nach hinten weiter gereicht)
   }else if(hexvalue == String(0x1230)){ //Nächste Kreuzung rechts. Kommt vom Vordermann
@@ -57,7 +54,9 @@ void machen(){
     NextTurn = "left"; //Nächste Abbiegung links
   }else if(hexvalue == String(0x1220)){
     SendIR(0x1220, 2, 0); //Weiter Fahren nach hinten weiter geben 
-    reifen.setspeed(70); //Und los fahren
+    reifen.setspeed(100); //Und los fahren
+  }else if(hexvalue ==  String(0xFFE21D)){
+    reifen.stop();
   }
   //Farbsensor Check
   if(NuminReihe == 1 && farbsensoren.Rot && !IgnoreNextRedLine){ //Wenn Rote Linie erreicht

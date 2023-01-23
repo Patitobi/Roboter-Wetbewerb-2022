@@ -51,7 +51,10 @@ void AmpelPing(long Code){
 void RedLineReached(){ // Muss von Farbsensor gecallt werden und kann auch nur von index 1 gecallt werden
     // Ping hinter dich das die zu dir bis auf eine bestimmte distanz auffahren sollen und dann auch stehen bleiben.
     // Dann Ping die Ampel an das die anfangen soll ihr Programm abzurfen -> (Ampel wartet 8 Sekunden und gibt dann grünes Signal via IR)
-    SendIR(0x1210, 2, 0); // Stehen bleiben 2x nach hinten
+    for (int i=0; i<3; i++){ 
+      SendIR(0x1210, 2, 0);
+      delay(200);
+      } // Stehen bleiben 2x nach hinten
     if (NuminReihe == 1) SendIR(0x1240, 2, 1); //Vorderes Auto sendet Signal zur ampel damit Ampel anfängt zu agieren
     // Warte nun auf Ampel Signal und gebe wenn  Ampel Signal da das Signal an die hinteren weiter
     while (hexvalue != String(0x1101)){
