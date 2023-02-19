@@ -127,7 +127,7 @@ int Rotcount = 0;
     for (int i = 0; i < 2; i++) {
       digitalWrite(SENSOR_S2, LOW);
       digitalWrite(SENSOR_S3, LOW);
-      farbSensorVal[sensnum][0] = pulseIn(SENSOR_OUT[sensnum], LOW);
+      farbSensorVal[sensnum][0] += pulseIn(SENSOR_OUT[sensnum], LOW);
     }
     farbSensorVal[sensnum][0] /= 2;
   }
@@ -135,7 +135,7 @@ int Rotcount = 0;
     for (int i = 0; i < 2; i++) {
       digitalWrite(SENSOR_S2, HIGH);
       digitalWrite(SENSOR_S3, HIGH);
-      farbSensorVal[sensnum][1] = pulseIn(SENSOR_OUT[sensnum], LOW);
+      farbSensorVal[sensnum][1] += pulseIn(SENSOR_OUT[sensnum], LOW);
     }
     farbSensorVal[sensnum][1] /= 2;
   }
@@ -143,7 +143,7 @@ int Rotcount = 0;
     for (int i = 0; i < 2; i++) {
       digitalWrite(SENSOR_S2, LOW);
       digitalWrite(SENSOR_S3, HIGH);
-      farbSensorVal[sensnum][2] = pulseIn(SENSOR_OUT[sensnum], LOW);
+      farbSensorVal[sensnum][2] += pulseIn(SENSOR_OUT[sensnum], LOW);
     }
     farbSensorVal[sensnum][2] /= 2;
   }
